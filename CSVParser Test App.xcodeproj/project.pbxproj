@@ -8,10 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		83E5869B1E2D35B20058879B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83E5869A1E2D35B20058879B /* AppDelegate.swift */; };
-		83E5869D1E2D35B20058879B /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83E5869C1E2D35B20058879B /* ViewController.swift */; };
 		83E5869F1E2D35B20058879B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 83E5869E1E2D35B20058879B /* Assets.xcassets */; };
 		83E586A21E2D35B20058879B /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 83E586A01E2D35B20058879B /* Main.storyboard */; };
 		83E586AD1E2D35B20058879B /* CSVParser_Test_AppTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83E586AC1E2D35B20058879B /* CSVParser_Test_AppTests.swift */; };
+		83E586B81E2D35F80058879B /* CSVParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83E586B71E2D35F80058879B /* CSVParser.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -27,13 +27,13 @@
 /* Begin PBXFileReference section */
 		83E586971E2D35B20058879B /* CSVParser Test App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "CSVParser Test App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		83E5869A1E2D35B20058879B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		83E5869C1E2D35B20058879B /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		83E5869E1E2D35B20058879B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		83E586A11E2D35B20058879B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		83E586A31E2D35B20058879B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		83E586A81E2D35B20058879B /* CSVParser Test AppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "CSVParser Test AppTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		83E586AC1E2D35B20058879B /* CSVParser_Test_AppTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSVParser_Test_AppTests.swift; sourceTree = "<group>"; };
 		83E586AE1E2D35B20058879B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		83E586B71E2D35F80058879B /* CSVParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CSVParser.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -76,7 +76,7 @@
 			isa = PBXGroup;
 			children = (
 				83E5869A1E2D35B20058879B /* AppDelegate.swift */,
-				83E5869C1E2D35B20058879B /* ViewController.swift */,
+				83E586B71E2D35F80058879B /* CSVParser.swift */,
 				83E5869E1E2D35B20058879B /* Assets.xcassets */,
 				83E586A01E2D35B20058879B /* Main.storyboard */,
 				83E586A31E2D35B20058879B /* Info.plist */,
@@ -195,8 +195,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				83E5869D1E2D35B20058879B /* ViewController.swift in Sources */,
 				83E5869B1E2D35B20058879B /* AppDelegate.swift in Sources */,
+				83E586B81E2D35F80058879B /* CSVParser.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

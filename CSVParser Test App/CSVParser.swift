@@ -1,6 +1,6 @@
 //
 //  CSVParser.swift
-//  CSVParser
+//  CSVParser Test App
 //
 //  Created by Chris on 16/01/2017.
 //  Copyright © 2017 chrispysoft. All rights reserved.
@@ -15,7 +15,6 @@ struct CSVToken {
 		case Quote
 		case Character
 	}
-	
 	var type: TokenType
 	var content: String
 }
@@ -85,9 +84,13 @@ struct SimpleParser: Sequence, IteratorProtocol {
 	}
 }
 
+
+
 struct CSVConfig {
 	
 }
+
+
 
 class CSVDocument: Sequence {
 	let data: Data
