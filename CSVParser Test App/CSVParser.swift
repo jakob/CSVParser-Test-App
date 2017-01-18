@@ -8,7 +8,7 @@
 
 import Foundation
 
-struct CSVToken {
+struct CSVToken: Equatable {
 	enum TokenType {
 		case Delimiter
 		case LineSeparator
@@ -17,6 +17,10 @@ struct CSVToken {
 	}
 	var type: TokenType
 	var content: String
+	
+	static func ==(lhs: CSVToken, rhs: CSVToken) -> Bool {
+		return lhs.type == rhs.type && lhs.content == rhs.content
+	}
 }
 
 enum CSVValue {
@@ -54,8 +58,23 @@ class UTF8DataTokenizer: CSVTokenizer {
 		if string.isEmpty {
 			return nil
 		}
+		
 		let char = string.remove(at: string.startIndex)
-		let token = CSVToken(type: .Character, content: String(char))
+		
+		let type: CSVToken.TokenType
+		switch char {
+		case ",":
+			type = .Delimiter
+		case "\n":
+			type = .LineSeparator
+		case "\"":
+			type = .Quote
+		default:
+			type = .Character
+			
+		}
+		
+		let token = CSVToken(type: type, content: String(char))
 		return token
 	}
 }
@@ -71,15 +90,45 @@ class CSVParser: Sequence, IteratorProtocol {
 	}
 	
 	func next() -> ([CSVValue],[CSVWarning])? {
-		guard let token = tokenizer.nextToken() else { return nil }
-		return ([CSVValue.Unquoted(value: token.content)],[])
+		var values = [CSVValue]()
+		var currValue = ""
+		
+		guard var token = tokenizer.nextToken() else {
+			return nil
+		}
+		
+		while true {
+			
+			switch token.type {
+			case .Character, .Quote:
+				currValue += token.content
+			case .Delimiter:
+				let val = CSVValue.Unquoted(value: currValue)
+				values.append(val)
+				currValue = ""
+			case .LineSeparator:
+				let val = CSVValue.Unquoted(value: currValue)
+				values.append(val)
+				return (values, [])
+			}
+			
+			guard let next = tokenizer.nextToken() else {
+				let val = CSVValue.Unquoted(value: currValue)
+				values.append(val)
+				return (values, [])
+			}
+			
+			token = next
+		}
+		
 	}
+	
 }
 
 struct SimpleParser: Sequence, IteratorProtocol {
 	let parser: CSVParser
 	func next() -> [String]? {
-		guard let (values,_) = parser.next() else { return nil }
+		guard let (values, _) = parser.next() else { return nil }
 		return values.map { $0.value ?? "" }
 	}
 }

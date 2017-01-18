@@ -18,8 +18,10 @@ class CSVParser_Test_AppTests: XCTestCase {
 		super.tearDown()
 	}
 	
+	
+	
 	func testTokenizerBasic() {
-		let data = "1,2,3\n4,5,6".data(using: .utf8)!
+		let data = "1,2,3\n4,\"5\",6".data(using: .utf8)!
 		let expectedTokens = [
 			CSVToken(type: .Character, content: "1"),
 			CSVToken(type: .Delimiter, content: ","),
@@ -29,7 +31,9 @@ class CSVParser_Test_AppTests: XCTestCase {
 			CSVToken(type: .LineSeparator, content: "\n"),
 			CSVToken(type: .Character, content: "4"),
 			CSVToken(type: .Delimiter, content: ","),
+			CSVToken(type: .Quote, content: "\""),
 			CSVToken(type: .Character, content: "5"),
+			CSVToken(type: .Quote, content: "\""),
 			CSVToken(type: .Delimiter, content: ","),
 			CSVToken(type: .Character, content: "6")
 		]
@@ -46,24 +50,29 @@ class CSVParser_Test_AppTests: XCTestCase {
 		for i in tokens.indices where expectedTokens.indices.contains(i) {
 			XCTAssertEqual(tokens[i].type, expectedTokens[i].type, "Token Type at index \(i) does not match")
 			XCTAssertEqual(tokens[i].content, expectedTokens[i].content, "Token Content at index \(i) does not match")
+			XCTAssertEqual(tokens[i], expectedTokens[i], "Token at index \(i) does not match")
 		}
 	}
-
 	
 	
-	func testBasicFile() {
+	func testDocumentBasic() {
 		let data = "1,2,3\n4,5,6".data(using: .utf8)!
-		let result = [["1","2","3"],["4","5","6"]]
+		let expected = [
+			["1","2","3"],
+			["4","5","6"]
+		]
 		
 		let csvdoc = CSVDocument(data: data)
+		var actual = Array(csvdoc)
 		
-		for (i, line) in csvdoc.enumerated() {
-			guard result.indices.contains(i) else {
-				XCTFail("Parser returned too many lines")
-				break
-			}
-			XCTAssertEqual(line, result[i])
+		XCTAssertEqual(actual.count, expected.count, "Did not receive expected number of lines")
+		
+		for i in actual.indices where expected.indices.contains(i) {
+			XCTAssertEqual(actual[i].count, expected[i].count, "Line \(i) does not have expected length")
+			XCTAssertEqual(actual[i], expected[i], "Line \(i) is not equal")
 		}
+		
 	}
+
 	
 }
