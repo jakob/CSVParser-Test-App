@@ -188,14 +188,14 @@ class CSVDocument: Sequence {
 		self.data = data
 	}
 	
-	var simpleParser: SimpleParser {
-		return SimpleParser(parser: csvParser)
-	}
-	
 	var csvParser: CSVParser {
 		let tok = UTF8DataTokenizer(data: data)
 		let parser = CSVParser(tokenizer: tok)
 		return parser
+	}
+	
+	var simpleParser: SimpleParser {
+		return SimpleParser(parser: csvParser)
 	}
 	
 	func makeIterator() -> SimpleParser {

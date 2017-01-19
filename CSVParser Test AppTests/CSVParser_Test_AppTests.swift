@@ -76,7 +76,7 @@ class CSVParser_Test_AppTests: XCTestCase {
 	}
 	
 	
-	func testDocumentQuoted() {
+	func testDocumentQuotedBasic() {
 		let data = "1,\"2\",3\n4,\"5\"\n6,\"7\",\"8\",\"9\"".data(using: .utf8)!
 		let expected = [
 			["1","2","3"],
@@ -92,6 +92,27 @@ class CSVParser_Test_AppTests: XCTestCase {
 		for i in actual.indices where expected.indices.contains(i) {
 			XCTAssertEqual(actual[i].count, expected[i].count, "Line \(i) does not have expected length")
 			XCTAssertEqual(actual[i], expected[i], "Line \(i) is not equal")
+		}
+		
+	}
+	
+	
+	func testDocumentQuotedExtended() {
+		let data = "1,\"2\",3\n4,\"5\"\n6,\"7\",\"8\",\"9\"".data(using: .utf8)!
+		let expected: [([CSVValue],[CSVWarning])] = [
+			([CSVValue.Unquoted(value: "1"), CSVValue.Unquoted(value: "2"), CSVValue.Unquoted(value: "3")], []),
+			([CSVValue.Unquoted(value: "4"), CSVValue.Unquoted(value: "5")], []),
+			([CSVValue.Unquoted(value: "6"), CSVValue.Unquoted(value: "7"), CSVValue.Unquoted(value: "8"), CSVValue.Unquoted(value: "9")], [])
+		]
+		
+		let csvdoc = CSVDocument(data: data)
+		var actual = Array(csvdoc.csvParser)
+		
+		XCTAssertEqual(actual.count, expected.count, "Did not receive expected number of lines")
+		
+		for i in actual.indices where expected.indices.contains(i) {
+			XCTAssertEqual(actual[i].0.count, expected[i].0.count, "Line \(i) does not have expected length")
+			//XCTAssertEqual(actual[i].0, expected[i].0, "Line \(i) is not equal")
 		}
 		
 	}
