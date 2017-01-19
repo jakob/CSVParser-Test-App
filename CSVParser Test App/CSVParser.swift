@@ -14,6 +14,7 @@ struct CSVToken: Equatable {
 		case LineSeparator
 		case Quote
 		case Character
+		case EndOfFile
 	}
 	var type: TokenType
 	var content: String
@@ -40,13 +41,14 @@ enum CSVValue {
 
 enum CSVWarning {
 	case PlaceholderWarning(byteOffset: Int)
+	case DefaultWarning
 }
 
 
 
 
 protocol CSVTokenizer {
-	func nextToken() -> CSVToken?
+	func nextToken() -> CSVToken
 }
 
 class UTF8DataTokenizer: CSVTokenizer {
@@ -54,9 +56,9 @@ class UTF8DataTokenizer: CSVTokenizer {
 	init(data: Data) {
 		self.string = String(bytes: data, encoding: .utf8)!
 	}
-	func nextToken() -> CSVToken? {
+	func nextToken() -> CSVToken {
 		if string.isEmpty {
-			return nil
+			return CSVToken(type: .EndOfFile, content: "")
 		}
 		
 		let char = string.remove(at: string.startIndex)
@@ -83,7 +85,14 @@ class UTF8DataTokenizer: CSVTokenizer {
 
 class CSVParser: Sequence, IteratorProtocol {
 	
+	enum Mode {
+		case Bare
+		case InsideQuote
+		case AfterQuote
+	}
+	
 	let tokenizer: CSVTokenizer
+	
 	
 	init(tokenizer: CSVTokenizer) {
 		self.tokenizer = tokenizer
@@ -91,35 +100,65 @@ class CSVParser: Sequence, IteratorProtocol {
 	
 	func next() -> ([CSVValue],[CSVWarning])? {
 		var values = [CSVValue]()
+		var warnings = [CSVWarning]()
 		var currValue = ""
+		var mode = Mode.Bare
 		
-		guard var token = tokenizer.nextToken() else {
+		func appendValue() {
+			let val = (mode == .Bare) ? CSVValue.Unquoted(value: currValue) : CSVValue.Quoted(value: currValue)
+			values.append(val)
+			currValue = ""
+		}
+		func appendWarning() {
+			let warning = CSVWarning.DefaultWarning
+			warnings.append(warning)
+		}
+
+		var token = tokenizer.nextToken()
+		if token.type == .EndOfFile {
 			return nil
 		}
 		
 		while true {
 			
-			switch token.type {
-			case .Character, .Quote:
+			switch (mode, token.type) {
+			
+			case (.AfterQuote, .Character):
+				print("WARNING: mode=\(mode), type=\(token.type)")
+				appendWarning()
+				
+			case (_, .Character):
 				currValue += token.content
-			case .Delimiter:
-				let val = CSVValue.Unquoted(value: currValue)
-				values.append(val)
-				currValue = ""
-			case .LineSeparator:
-				let val = CSVValue.Unquoted(value: currValue)
-				values.append(val)
-				return (values, [])
+				
+			case (.InsideQuote, .Quote):
+				mode = .AfterQuote
+				
+			case (.InsideQuote, _):
+				currValue += token.content
+				
+			case (_, .Delimiter):
+				appendValue()
+				mode = .Bare
+				
+			case (.Bare, .Quote):
+				mode = .InsideQuote
+				break
+				
+			case (.Bare, .LineSeparator), (.Bare, .EndOfFile):
+				appendValue()
+				return (values, warnings)
+				
+			case (.AfterQuote, .LineSeparator), (.AfterQuote, .EndOfFile):
+				appendValue()
+				return (values, warnings)
+				
+			default:
+				print("DEFAULT CASE: mode=\(mode), type=\(token.type)")
 			}
 			
-			guard let next = tokenizer.nextToken() else {
-				let val = CSVValue.Unquoted(value: currValue)
-				values.append(val)
-				return (values, [])
-			}
-			
-			token = next
+			token = tokenizer.nextToken()
 		}
+		
 		
 	}
 	

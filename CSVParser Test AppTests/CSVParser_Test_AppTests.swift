@@ -35,15 +35,16 @@ class CSVParser_Test_AppTests: XCTestCase {
 			CSVToken(type: .Character, content: "5"),
 			CSVToken(type: .Quote, content: "\""),
 			CSVToken(type: .Delimiter, content: ","),
-			CSVToken(type: .Character, content: "6")
+			CSVToken(type: .Character, content: "6"),
+			CSVToken(type: .EndOfFile, content: "")
 		]
 		
 		let tokenizer = UTF8DataTokenizer(data: data)
 		
 		var tokens = [CSVToken]()
-		while let token = tokenizer.nextToken() {
-			tokens.append(token)
-		}
+		repeat {
+			tokens.append(tokenizer.nextToken())
+		} while tokens.last!.type != .EndOfFile
 		
 		XCTAssertEqual(tokens.count, expectedTokens.count, "Did not receive expected number of tokens")
 		
@@ -73,6 +74,25 @@ class CSVParser_Test_AppTests: XCTestCase {
 		}
 		
 	}
-
 	
+	
+	func testDocumentQuoted() {
+		let data = "1,\"2\",3\n4,\"5\"\n6,\"7\",\"8\",\"9\"".data(using: .utf8)!
+		let expected = [
+			["1","2","3"],
+			["4","5"],
+			["6","7","8","9"]
+		]
+		
+		let csvdoc = CSVDocument(data: data)
+		var actual = Array(csvdoc)
+		
+		XCTAssertEqual(actual.count, expected.count, "Did not receive expected number of lines")
+		
+		for i in actual.indices where expected.indices.contains(i) {
+			XCTAssertEqual(actual[i].count, expected[i].count, "Line \(i) does not have expected length")
+			XCTAssertEqual(actual[i], expected[i], "Line \(i) is not equal")
+		}
+		
+	}
 }
