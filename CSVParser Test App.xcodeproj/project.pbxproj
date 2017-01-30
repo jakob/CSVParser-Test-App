@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		8312E24E1E3F5AEB00435F89 /* Heuristic Test Documents in Resources */ = {isa = PBXBuildFile; fileRef = 8312E24C1E3F5AEB00435F89 /* Heuristic Test Documents */; };
+		8312E24F1E3F5AEB00435F89 /* Reading Test Documents in Resources */ = {isa = PBXBuildFile; fileRef = 8312E24D1E3F5AEB00435F89 /* Reading Test Documents */; };
 		83E5869B1E2D35B20058879B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83E5869A1E2D35B20058879B /* AppDelegate.swift */; };
 		83E5869F1E2D35B20058879B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 83E5869E1E2D35B20058879B /* Assets.xcassets */; };
 		83E586A21E2D35B20058879B /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 83E586A01E2D35B20058879B /* Main.storyboard */; };
@@ -25,6 +27,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		8312E24C1E3F5AEB00435F89 /* Heuristic Test Documents */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "Heuristic Test Documents"; sourceTree = "<group>"; };
+		8312E24D1E3F5AEB00435F89 /* Reading Test Documents */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "Reading Test Documents"; sourceTree = "<group>"; };
 		83E586971E2D35B20058879B /* CSVParser Test App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "CSVParser Test App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		83E5869A1E2D35B20058879B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		83E5869E1E2D35B20058879B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -89,6 +93,8 @@
 			children = (
 				83E586AC1E2D35B20058879B /* CSVParser_Test_AppTests.swift */,
 				83E586AE1E2D35B20058879B /* Info.plist */,
+				8312E24C1E3F5AEB00435F89 /* Heuristic Test Documents */,
+				8312E24D1E3F5AEB00435F89 /* Reading Test Documents */,
 			);
 			path = "CSVParser Test AppTests";
 			sourceTree = "<group>";
@@ -185,6 +191,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8312E24F1E3F5AEB00435F89 /* Reading Test Documents in Resources */,
+				8312E24E1E3F5AEB00435F89 /* Heuristic Test Documents in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -395,6 +403,7 @@
 				83E586B31E2D35B20058879B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		83E586B41E2D35B20058879B /* Build configuration list for PBXNativeTarget "CSVParser Test AppTests" */ = {
 			isa = XCConfigurationList;
@@ -403,6 +412,7 @@
 				83E586B61E2D35B20058879B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
