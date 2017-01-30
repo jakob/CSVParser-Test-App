@@ -97,9 +97,10 @@ class CSVParser_Test_AppTests: XCTestCase {
 	}
 	
 	
+	/*
 	func testDocumentQuotedExtended() {
 		let data = "1,\"2\",3\n4,\"5\"\n6,\"7\",\"8\",\"9\"".data(using: .utf8)!
-		let expected: [([CSVValue],[CSVWarning])] = [
+		let expected: [CSVParser.CSVLine] = [
 			([CSVValue.Unquoted(value: "1"), CSVValue.Unquoted(value: "2"), CSVValue.Unquoted(value: "3")], []),
 			([CSVValue.Unquoted(value: "4"), CSVValue.Unquoted(value: "5")], []),
 			([CSVValue.Unquoted(value: "6"), CSVValue.Unquoted(value: "7"), CSVValue.Unquoted(value: "8"), CSVValue.Unquoted(value: "9")], [])
@@ -112,8 +113,74 @@ class CSVParser_Test_AppTests: XCTestCase {
 		
 		for i in actual.indices where expected.indices.contains(i) {
 			XCTAssertEqual(actual[i].0.count, expected[i].0.count, "Line \(i) does not have expected length")
-			//XCTAssertEqual(actual[i].0, expected[i].0, "Line \(i) is not equal")
+			XCTAssertEqual(actual[i].0, expected[i].0, "Line \(i) is not equal")
 		}
 		
+	}
+	*/
+	
+	
+	/*
+	CSV-FILE TESTS
+	*/
+	
+	func testBlankLines() {
+		let fileURL = Bundle(for: type(of: self)).url(forResource: "Reading Test Documents/different-lines-quoted", withExtension: "csv")!
+		let fileData = try! Data(contentsOf: fileURL)
+		let csvDoc = CSVDocument(data: fileData)
+		var actual = Array(csvDoc)
+		
+		let expected = [
+			["1","2","3"],
+			["4","5"],
+			[""],
+			[""],
+			["8","9","10"],
+			["11"],
+			["12"]
+		]
+		
+		XCTAssertEqual(actual.count, expected.count, "Did not receive expected number of lines")
+		
+		for i in actual.indices where expected.indices.contains(i) {
+			XCTAssertEqual(actual[i].count, expected[i].count, "Line \(i) does not have expected length")
+			XCTAssertEqual(actual[i], expected[i], "Line \(i) is not equal")
+		}
+		
+	}
+	
+	
+	
+	
+	func testByteStreamReader() {
+		let fileURL = Bundle(for: type(of: self)).url(forResource: "Reading Test Documents/different-lines-quoted", withExtension: "csv")!
+		
+		guard let byteStreamReader = ByteStreamReader(fileURL: fileURL) else { print("Error creating ByteStreamReader"); return }
+		
+		var idx = 0
+		while let byte = byteStreamReader.nextByte() {
+			print("byte\(idx) = \(byte)")
+			idx += 1
+		}
+	}
+	
+	
+	
+	func testCharacterStreamReader() {
+		let fileURL = Bundle(for: type(of: self)).url(forResource: "Reading Test Documents/utf-8", withExtension: "csv")!
+		
+		guard let characterStreamReader = CharacterStreamReader(fileURL: fileURL) else { print("Error creating ByteStreamReader"); return }
+		
+		var idx = 0
+		while let (char, warning) = characterStreamReader.nextCharacter() {
+			if let warning = warning {
+				print("warning: \(warning)")
+				return
+			}
+			if let char = char {
+				print("char\(idx) = \(char)")
+				idx += 1
+			}
+		}
 	}
 }
