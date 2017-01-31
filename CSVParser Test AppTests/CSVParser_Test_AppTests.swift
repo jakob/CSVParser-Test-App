@@ -23,28 +23,28 @@ class CSVParser_Test_AppTests: XCTestCase {
 	func testTokenizerBasic() {
 		let data = "1,2,3\n4,\"5\",6".data(using: .utf8)!
 		let expectedTokens = [
-			CSVToken(type: .Character, content: "1"),
-			CSVToken(type: .Delimiter, content: ","),
-			CSVToken(type: .Character, content: "2"),
-			CSVToken(type: .Delimiter, content: ","),
-			CSVToken(type: .Character, content: "3"),
-			CSVToken(type: .LineSeparator, content: "\n"),
-			CSVToken(type: .Character, content: "4"),
-			CSVToken(type: .Delimiter, content: ","),
-			CSVToken(type: .Quote, content: "\""),
-			CSVToken(type: .Character, content: "5"),
-			CSVToken(type: .Quote, content: "\""),
-			CSVToken(type: .Delimiter, content: ","),
-			CSVToken(type: .Character, content: "6"),
-			CSVToken(type: .EndOfFile, content: "")
+			CSVToken(type: .character, content: "1"),
+			CSVToken(type: .delimiter, content: ","),
+			CSVToken(type: .character, content: "2"),
+			CSVToken(type: .delimiter, content: ","),
+			CSVToken(type: .character, content: "3"),
+			CSVToken(type: .lineSeparator, content: "\n"),
+			CSVToken(type: .character, content: "4"),
+			CSVToken(type: .delimiter, content: ","),
+			CSVToken(type: .quote, content: "\""),
+			CSVToken(type: .character, content: "5"),
+			CSVToken(type: .quote, content: "\""),
+			CSVToken(type: .delimiter, content: ","),
+			CSVToken(type: .character, content: "6"),
+			CSVToken(type: .endOfFile, content: "")
 		]
 		
-		let tokenizer = UTF8DataTokenizer(data: data)
+		let tokenizer = UTF8DataTokenizer(data: data, config: CSVConfig())
 		
 		var tokens = [CSVToken]()
 		repeat {
 			tokens.append(tokenizer.nextToken())
-		} while tokens.last!.type != .EndOfFile
+		} while tokens.last!.type != .endOfFile
 		
 		XCTAssertEqual(tokens.count, expectedTokens.count, "Did not receive expected number of tokens")
 		
@@ -63,8 +63,8 @@ class CSVParser_Test_AppTests: XCTestCase {
 			["4","5","6"]
 		]
 		
-		let csvdoc = CSVDocument(data: data)
-		var actual = Array(csvdoc)
+		let csvDoc = CSVDocument(data: data)
+		var actual = Array(csvDoc)
 		
 		XCTAssertEqual(actual.count, expected.count, "Did not receive expected number of lines")
 		
@@ -96,28 +96,6 @@ class CSVParser_Test_AppTests: XCTestCase {
 		
 	}
 	
-	
-	/*
-	func testDocumentQuotedExtended() {
-		let data = "1,\"2\",3\n4,\"5\"\n6,\"7\",\"8\",\"9\"".data(using: .utf8)!
-		let expected: [CSVParser.CSVLine] = [
-			([CSVValue.Unquoted(value: "1"), CSVValue.Unquoted(value: "2"), CSVValue.Unquoted(value: "3")], []),
-			([CSVValue.Unquoted(value: "4"), CSVValue.Unquoted(value: "5")], []),
-			([CSVValue.Unquoted(value: "6"), CSVValue.Unquoted(value: "7"), CSVValue.Unquoted(value: "8"), CSVValue.Unquoted(value: "9")], [])
-		]
-		
-		let csvdoc = CSVDocument(data: data)
-		var actual = Array(csvdoc.csvParser)
-		
-		XCTAssertEqual(actual.count, expected.count, "Did not receive expected number of lines")
-		
-		for i in actual.indices where expected.indices.contains(i) {
-			XCTAssertEqual(actual[i].0.count, expected[i].0.count, "Line \(i) does not have expected length")
-			XCTAssertEqual(actual[i].0, expected[i].0, "Line \(i) is not equal")
-		}
-		
-	}
-	*/
 	
 	
 	/*
@@ -151,11 +129,9 @@ class CSVParser_Test_AppTests: XCTestCase {
 	
 	
 	
-	
 	func testByteStreamReader() {
 		let fileURL = Bundle(for: type(of: self)).url(forResource: "Reading Test Documents/different-lines-quoted", withExtension: "csv")!
-		
-		guard let byteStreamReader = ByteStreamReader(fileURL: fileURL) else { print("Error creating ByteStreamReader"); return }
+		let byteStreamReader = ByteStreamReader(fileURL: fileURL)
 		
 		var idx = 0
 		while let byte = byteStreamReader.nextByte() {
@@ -169,7 +145,8 @@ class CSVParser_Test_AppTests: XCTestCase {
 	func testCharacterStreamReader() {
 		let fileURL = Bundle(for: type(of: self)).url(forResource: "Reading Test Documents/utf-8", withExtension: "csv")!
 		
-		guard let characterStreamReader = CharacterStreamReader(fileURL: fileURL) else { print("Error creating ByteStreamReader"); return }
+		let byteStreamReader = ByteStreamReader(fileURL: fileURL)
+		let characterStreamReader = CharacterStreamReader(byteReader: byteStreamReader)
 		
 		var idx = 0
 		while let (char, warning) = characterStreamReader.nextCharacter() {
@@ -181,6 +158,27 @@ class CSVParser_Test_AppTests: XCTestCase {
 				print("char\(idx) = \(char)")
 				idx += 1
 			}
+		}
+	}
+	
+	
+	
+	func testStreamTokenizer() {
+		let fileURL = Bundle(for: type(of: self)).url(forResource: "Reading Test Documents/comma-separated", withExtension: "csv")!
+		let csvDoc = CSVDocument(fileURL: fileURL)
+		var actual = Array(csvDoc)
+		
+		let expected = [
+			["a","b","c"],
+			["1","2","3"],
+			["1.1","1.2","1.3"]
+		]
+		
+		XCTAssertEqual(actual.count, expected.count, "Did not receive expected number of lines")
+		
+		for i in actual.indices where expected.indices.contains(i) {
+			XCTAssertEqual(actual[i].count, expected[i].count, "Line \(i) does not have expected length")
+			XCTAssertEqual(actual[i], expected[i], "Line \(i) is not equal")
 		}
 	}
 }
