@@ -451,16 +451,20 @@ class ByteStreamReader: ByteReader {
 }
 
 class ByteDataReader: ByteReader {
-	private var bytes: [UInt8]
+	private var data: Data
+	private var index: Int = 0
 	
 	init(data: Data) {
-		self.bytes = [UInt8](data)
+		self.data = data
 	}
 	
 	func nextByte() -> UInt8? {
-		if bytes.isEmpty {
-			return nil
+		if index < data.count {
+			let byte = data[index]
+			index += 1
+			return byte
 		}
-		return bytes.remove(at: 0)
+		return nil
+		
 	}
 }

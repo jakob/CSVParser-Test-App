@@ -20,6 +20,10 @@ class CSVParser_Test_AppTests: XCTestCase {
 	
 	
 	
+	/*
+	Basic Tests
+	*/
+	
 	func testTokenizerBasic() {
 		let data = "1,2,3\n4,\"5\",6".data(using: .utf8)!
 		let expectedTokens = [
@@ -99,13 +103,97 @@ class CSVParser_Test_AppTests: XCTestCase {
 	
 	
 	/*
-	CSV-FILE TESTS
+	Reading Test Documents
 	*/
 	
+	func testUTF8() {
+		let fileURL = Bundle(for: type(of: self)).url(forResource: "Reading Test Documents/utf-8", withExtension: "csv")!
+		
+		let byteStreamReader = ByteStreamReader(fileURL: fileURL)
+		let characterStreamReader = CharacterStreamReader(byteReader: byteStreamReader)
+		
+		let expected = ["a","ä","®","€","𝄞","😀","🤓","🤢"]
+		
+		var i = 0
+		while let (char, warning) = characterStreamReader.nextCharacter(), expected.indices.contains(i) {
+			if let warning = warning {
+				print("warning: \(warning)")
+				return
+			}
+			if let char = char {
+				XCTAssertEqual(String(char), expected[i], "Character \(i) is not equal")
+				i += 1
+			}
+		}
+	}
+	
+	
 	func testBlankLines() {
+		let fileURL = Bundle(for: type(of: self)).url(forResource: "Reading Test Documents/blank-lines", withExtension: "csv")!
+		let csvDoc = CSVDocument(fileURL: fileURL)
+		var actual = Array(csvDoc)
+		
+		let expected = [
+			["1"],
+			["2"],
+			[""],
+			[""],
+			["5"],
+			["6"]
+		]
+		
+		XCTAssertEqual(actual.count, expected.count, "Did not receive expected number of lines")
+		
+		for i in actual.indices where expected.indices.contains(i) {
+			XCTAssertEqual(actual[i].count, expected[i].count, "Line \(i) does not have expected length")
+			XCTAssertEqual(actual[i], expected[i], "Line \(i) is not equal")
+		}
+	}
+	
+	
+	func testCommaSeparated() {
+		let fileURL = Bundle(for: type(of: self)).url(forResource: "Reading Test Documents/comma-separated", withExtension: "csv")!
+		let csvDoc = CSVDocument(fileURL: fileURL)
+		var actual = Array(csvDoc)
+		
+		let expected = [
+			["a","b","c"],
+			["1","2","3"],
+			["1.1","1.2","1.3"]
+		]
+		
+		XCTAssertEqual(actual.count, expected.count, "Did not receive expected number of lines")
+		
+		for i in actual.indices where expected.indices.contains(i) {
+			XCTAssertEqual(actual[i].count, expected[i].count, "Line \(i) does not have expected length")
+			XCTAssertEqual(actual[i], expected[i], "Line \(i) is not equal")
+		}
+	}
+	
+	
+	func testCommaSeparatedQuote() {
+		let fileURL = Bundle(for: type(of: self)).url(forResource: "Reading Test Documents/comma-separated-quote", withExtension: "csv")!
+		let csvDoc = CSVDocument(fileURL: fileURL)
+		var actual = Array(csvDoc)
+		
+		let expected = [
+			["a","b","c"],
+			["1","2","3"],
+			["1,1","1,2","1,3"]
+		]
+		
+		XCTAssertEqual(actual.count, expected.count, "Did not receive expected number of lines")
+		
+		for i in actual.indices where expected.indices.contains(i) {
+			XCTAssertEqual(actual[i].count, expected[i].count, "Line \(i) does not have expected length")
+			XCTAssertEqual(actual[i], expected[i], "Line \(i) is not equal")
+		}
+	}
+	
+	
+	func testDifferentLinesQuoted() {
 		let fileURL = Bundle(for: type(of: self)).url(forResource: "Reading Test Documents/different-lines-quoted", withExtension: "csv")!
-		let fileData = try! Data(contentsOf: fileURL)
-		let csvDoc = CSVDocument(data: fileData)
+		let csvDoc = CSVDocument(fileURL: fileURL)
 		var actual = Array(csvDoc)
 		
 		let expected = [
@@ -124,54 +212,16 @@ class CSVParser_Test_AppTests: XCTestCase {
 			XCTAssertEqual(actual[i].count, expected[i].count, "Line \(i) does not have expected length")
 			XCTAssertEqual(actual[i], expected[i], "Line \(i) is not equal")
 		}
-		
 	}
 	
 	
-	
-	func testByteStreamReader() {
-		let fileURL = Bundle(for: type(of: self)).url(forResource: "Reading Test Documents/different-lines-quoted", withExtension: "csv")!
-		let byteStreamReader = ByteStreamReader(fileURL: fileURL)
-		
-		var idx = 0
-		while let byte = byteStreamReader.nextByte() {
-			print("byte\(idx) = \(byte)")
-			idx += 1
-		}
-	}
-	
-	
-	
-	func testCharacterStreamReader() {
-		let fileURL = Bundle(for: type(of: self)).url(forResource: "Reading Test Documents/utf-8", withExtension: "csv")!
-		
-		let byteStreamReader = ByteStreamReader(fileURL: fileURL)
-		let characterStreamReader = CharacterStreamReader(byteReader: byteStreamReader)
-		
-		var idx = 0
-		while let (char, warning) = characterStreamReader.nextCharacter() {
-			if let warning = warning {
-				print("warning: \(warning)")
-				return
-			}
-			if let char = char {
-				print("char\(idx) = \(char)")
-				idx += 1
-			}
-		}
-	}
-	
-	
-	
-	func testStreamTokenizer() {
-		let fileURL = Bundle(for: type(of: self)).url(forResource: "Reading Test Documents/comma-separated", withExtension: "csv")!
+	func testInvalidEncoding() {
+		let fileURL = Bundle(for: type(of: self)).url(forResource: "Reading Test Documents/invalid-encoding", withExtension: "csv")!
 		let csvDoc = CSVDocument(fileURL: fileURL)
 		var actual = Array(csvDoc)
 		
 		let expected = [
-			["a","b","c"],
-			["1","2","3"],
-			["1.1","1.2","1.3"]
+			["text","ung�ltiger text","text"]
 		]
 		
 		XCTAssertEqual(actual.count, expected.count, "Did not receive expected number of lines")
@@ -181,4 +231,94 @@ class CSVParser_Test_AppTests: XCTestCase {
 			XCTAssertEqual(actual[i], expected[i], "Line \(i) is not equal")
 		}
 	}
+	
+	
+	func testMissingBackslashAfterValue() {
+		let fileURL = Bundle(for: type(of: self)).url(forResource: "Reading Test Documents/missing-backslash-afterValue", withExtension: "csv")!
+		let csvDoc = CSVDocument(fileURL: fileURL)
+		var actual = Array(csvDoc)
+		
+		let expected = [
+			["1","2\"","3"]
+		]
+		
+		XCTAssertEqual(actual.count, expected.count, "Did not receive expected number of lines")
+		
+		for i in actual.indices where expected.indices.contains(i) {
+			XCTAssertEqual(actual[i].count, expected[i].count, "Line \(i) does not have expected length")
+			XCTAssertEqual(actual[i], expected[i], "Line \(i) is not equal")
+		}
+	}
+	
+	
+	func testMissingBackslashBeforeValue() {
+		let fileURL = Bundle(for: type(of: self)).url(forResource: "Reading Test Documents/missing-backslash-beforeValue", withExtension: "csv")!
+		let csvDoc = CSVDocument(fileURL: fileURL)
+		var actual = Array(csvDoc)
+		
+		let expected = [
+			["1","\"2","3"]
+		]
+		
+		XCTAssertEqual(actual.count, expected.count, "Did not receive expected number of lines")
+		
+		for i in actual.indices where expected.indices.contains(i) {
+			XCTAssertEqual(actual[i].count, expected[i].count, "Line \(i) does not have expected length")
+			XCTAssertEqual(actual[i], expected[i], "Line \(i) is not equal")
+		}
+	}
+	
+	
+	func testMissingQuoteAtEnd() {
+		let fileURL = Bundle(for: type(of: self)).url(forResource: "Reading Test Documents/missing-quote-atEnd", withExtension: "csv")!
+		let csvDoc = CSVDocument(fileURL: fileURL)
+		var actual = Array(csvDoc)
+		
+		let expected = [
+			["1","2","3"]
+		]
+		
+		XCTAssertEqual(actual.count, expected.count, "Did not receive expected number of lines")
+		
+		for i in actual.indices where expected.indices.contains(i) {
+			XCTAssertEqual(actual[i].count, expected[i].count, "Line \(i) does not have expected length")
+			XCTAssertEqual(actual[i], expected[i], "Line \(i) is not equal")
+		}
+	}
+	
+	
+	func testSemicolonSeparated() {
+		let fileURL = Bundle(for: type(of: self)).url(forResource: "Reading Test Documents/semicolon-separated", withExtension: "csv")!
+		var config = CSVConfig()
+		config.delimiterCharacter = ";"
+		let csvDoc = CSVDocument(fileURL: fileURL, config: config)
+		var actual = Array(csvDoc)
+		
+		let expected = [
+			["a","b","c"],
+			["1","2","3"],
+			["1,1","1,2","1,3"]
+		]
+		
+		XCTAssertEqual(actual.count, expected.count, "Did not receive expected number of lines")
+		
+		for i in actual.indices where expected.indices.contains(i) {
+			XCTAssertEqual(actual[i].count, expected[i].count, "Line \(i) does not have expected length")
+			XCTAssertEqual(actual[i], expected[i], "Line \(i) is not equal")
+		}
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
 }
