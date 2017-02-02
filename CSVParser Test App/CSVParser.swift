@@ -2,11 +2,15 @@
 //  CSVParser.swift
 //  CSVParser Test App
 //
-//  Created by Chris on 16/01/2017.
+//  Created by Chris on 02/02/2017.
 //  Copyright © 2017 chrispysoft. All rights reserved.
 //
 
 import Foundation
+
+/*
+Types
+*/
 
 struct CSVConfig {
 	var encoding = String.Encoding.utf8
@@ -16,7 +20,6 @@ struct CSVConfig {
 	var decimalCharacter: Character = "."
 	var newlineCharacter: Character = "\n"
 	var firstRowAsHeader = false
-	
 	var description: String {
 		return "encoding: '\(encoding)', delimiter: '\(delimiterCharacter)', quote: '\(quoteCharacter)', escape: '\(escapeCharacter)', decimal: '\(decimalCharacter)', firstRowAsHeader: \(firstRowAsHeader)"
 	}
@@ -38,35 +41,56 @@ struct CSVToken: Equatable {
 	}
 }
 
-enum CSVValue {
-	case quoted(value: String)
-	case unquoted(value: String)
-	case none
+struct CSVValue {
+	var value: String?
+	var quoted: Bool
 	
-	var value: String? {
-		switch self {
-		case let .quoted(str), let .unquoted(str):
-			return str
-		default:
-			return nil
-		}
+	init(_ value: String, quoted: Bool = false) {
+		self.value = value
+		self.quoted = quoted
 	}
 }
 
-enum CSVWarning {
-	case placeholderWarning(byteOffset: Int)
-	case defaultWarning
+struct CSVWarning {
+	let text: String
+}
+
+enum CSVParsingMode {
+	case beforeQuote
+	case insideQuote
+	case afterQuote
 }
 
 
 
 /*
-	DOCUMENT
+WarningProducer
 */
-class CSVDocument: Sequence {
+
+protocol WarningProducer {
+	var warnings: [CSVWarning] { get set }
+}
+
+extension WarningProducer {
+	mutating func addWarning(_ warning: CSVWarning) {
+		warnings.append(warning)
+	}
+	mutating func nextWarning() -> CSVWarning? {
+		return warnings.isEmpty ? nil : warnings.removeFirst()
+	}
+}
+
+
+
+/*
+Document
+*/
+
+class CSVDocument : Sequence {
 	private let fileURL: URL?
 	private let sourceData: Data?
 	private let config: CSVConfig
+	var warnings = [CSVWarning]()
 	
 	init(fileURL: URL, config: CSVConfig = CSVConfig()) {
 		self.fileURL = fileURL
@@ -79,81 +103,86 @@ class CSVDocument: Sequence {
 		self.sourceData = data
 		self.config = config
 	}
-
 	
-	var csvParser: CSVParser {
-		let byteReader: ByteReader
+	var csvParser: CSVParser<StreamTokenizer<UTF8CodepointIterator<FileByteIterator>>>  {
+//		let byteIterator: WarningProducer
+//		if let url = fileURL {
+//			byteIterator = FileByteIterator(fileURL: url)
+//		}
+//		else if let data = sourceData {
+//			byteIterator = DataByteIterator(data: data)
+//		}
+//		else {
+//			fatalError("This should be unreachable")
+//		}
+//		
+//		let codepointIterator: InputIterator
+//		if config.encoding == .utf8 {
+//			codepointIterator = UTF8CodepointIterator(byteIterator: byteIterator)
+//		} else {
+//			fatalError("Unsupported Character Encoding")
+//		}
+//		
+//		let tokenizer = StreamTokenizer(inputIterator: codepointIterator, config: config)
+//		let parser = CSVParser(tokenizer: tokenizer)
+//		return parser
+		
+		
 		if let url = fileURL {
-			byteReader = ByteStreamReader(fileURL: url)
-		}
-		else if let data = sourceData {
-			byteReader = ByteDataReader(data: data)
-		}
-		else {
-			fatalError("This should be unreachable")
-		}
-		
-		let characterStreamReader: CharacterStreamReader
-		if config.encoding == .utf8 {
-			characterStreamReader = CharacterStreamReader(byteReader: byteReader)
+			let byteIterator = FileByteIterator(fileURL: url)
+			let codepointIterator = UTF8CodepointIterator(byteIterator: byteIterator)
+			let tokenizer = StreamTokenizer(inputIterator: codepointIterator, config: config)
+			let parser = CSVParser(inputIterator: tokenizer, config: config)
+			return parser
 		} else {
-			fatalError("Unsupported Character Encoding")
+			fatalError("Unsupported Configuration")
 		}
-		
-		let tokenizer = StreamTokenizer(characterStreamReader: characterStreamReader, config: config)
-		let parser = CSVParser(tokenizer: tokenizer)
-		return parser
 	}
 	
-	var simpleParser: SimpleParser {
+	var simpleParser: SimpleParser<StreamTokenizer<UTF8CodepointIterator<FileByteIterator>>> {
 		return SimpleParser(parser: csvParser)
 	}
 	
-	func makeIterator() -> SimpleParser {
+	func makeIterator() -> SimpleParser<StreamTokenizer<UTF8CodepointIterator<FileByteIterator>>> {
 		return simpleParser
 	}
+	
 }
 
 
 
 /*
-	PARSER
+Parsers
 */
-class CSVParser: Sequence, IteratorProtocol {
+
+class CSVParser<InputIterator : IteratorProtocol> : Sequence, IteratorProtocol, WarningProducer where InputIterator.Element == CSVToken {
+	private var inputIterator: InputIterator
+	private var config: CSVConfig
+	var warnings = [CSVWarning]()
 	
-	enum Mode {
-		case beforeQuote
-		case insideQuote
-		case afterQuote
+	init(inputIterator: InputIterator, config: CSVConfig) {
+		self.inputIterator = inputIterator
+		self.config = config
 	}
 	
-	typealias CSVLine = ([CSVValue],[CSVWarning])
-	
-	let tokenizer: CSVTokenizer
-	
-	
-	init(tokenizer: CSVTokenizer) {
-		self.tokenizer = tokenizer
-	}
-	
-	func next() -> CSVLine? {
+	func next() -> [CSVValue]? {
 		var values = [CSVValue]()
 		var warnings = [CSVWarning]()
 		var currValue = ""
-		var mode = Mode.beforeQuote
+		var mode = CSVParsingMode.beforeQuote
 		
 		func appendValue() {
-			let val = (mode == .beforeQuote) ? CSVValue.unquoted(value: currValue) : CSVValue.quoted(value: currValue)
+			let quoted = (mode == .beforeQuote) ? false : true
+			let val = CSVValue(currValue, quoted: quoted)
 			values.append(val)
 			currValue = ""
 		}
-		func appendWarning() {
-			let warning = CSVWarning.defaultWarning
+		func appendWarning(_ text: String) {
+			let warning = CSVWarning(text: text)
 			warnings.append(warning)
 		}
 		
-		var token = tokenizer.nextToken()
-		if token.type == .endOfFile {
+		guard var token = inputIterator.next(), token.type != .endOfFile else {
 			return nil
 		}
 		
@@ -168,7 +197,7 @@ class CSVParser: Sequence, IteratorProtocol {
 			case (.afterQuote, .character):
 				currValue += token.content
 				print("WARNING: mode=\(mode), type=\(token.type)")
-				appendWarning()
+				appendWarning("")
 				
 			case (_, .character):
 				currValue += token.content
@@ -177,9 +206,9 @@ class CSVParser: Sequence, IteratorProtocol {
 				mode = .afterQuote
 				
 			case (.insideQuote, .endOfFile):
-				appendWarning()
+				appendWarning("")
 				appendValue()
-				return (values, warnings)
+				return values
 				
 			case (.insideQuote, _):
 				currValue += token.content
@@ -189,31 +218,34 @@ class CSVParser: Sequence, IteratorProtocol {
 				mode = .beforeQuote
 				
 			case (.beforeQuote, .quote):
-				if !currValue.isEmpty { appendWarning() }
+				if !currValue.isEmpty { appendWarning("") }
 				mode = .insideQuote
 				
 			case (_, .lineSeparator), (_, .endOfFile):
 				appendValue()
-				return (values, warnings)
+				return values
 				
 			default:
 				fatalError("Impossible case: mode=\(mode), tokenType=\(token.type)")
 			}
 			
-			token = tokenizer.nextToken()
+			guard let nextToken = inputIterator.next() else {
+				return nil
+			}
+			token = nextToken
 		}
 	}
 }
 
-class SimpleParser: Sequence, IteratorProtocol {
-	let parser: CSVParser
+class SimpleParser<InputIterator : IteratorProtocol> : Sequence, IteratorProtocol where InputIterator.Element == CSVToken {
+	let parser: CSVParser<InputIterator>
 	
-	init(parser: CSVParser) {
+	init(parser: CSVParser<InputIterator>) {
 		self.parser = parser
 	}
 	
 	func next() -> [String]? {
-		guard let (values, _) = parser.next() else { return nil }
+		guard let values = parser.next() else { return nil }
 		return values.map { $0.value ?? "" }
 	}
 }
@@ -221,22 +253,20 @@ class SimpleParser: Sequence, IteratorProtocol {
 
 
 /*
-	TOKENIZER
+Tokenizers
 */
-protocol CSVTokenizer {
-	func nextToken() -> CSVToken
-}
 
-class UTF8DataTokenizer: CSVTokenizer {
-	var string: String
-	var config: CSVConfig
+class UTF8DataTokenizer : Sequence, IteratorProtocol, WarningProducer {
+	private var string: String
+	private var config: CSVConfig
+	var warnings = [CSVWarning]()
 	
 	init(data: Data, config: CSVConfig) {
 		self.string = String(bytes: data, encoding: .utf8)!
 		self.config = config
 	}
 	
-	func nextToken() -> CSVToken {
+	func next() -> CSVToken? {
 		if string.isEmpty {
 			return CSVToken(type: .endOfFile, content: "")
 		}
@@ -260,20 +290,18 @@ class UTF8DataTokenizer: CSVTokenizer {
 	}
 }
 
-class StreamTokenizer: CSVTokenizer {
-	var characterStreamReader: CharacterStreamReader
-	var config: CSVConfig
+class StreamTokenizer<InputIterator : IteratorProtocol> : Sequence, IteratorProtocol, WarningProducer where InputIterator.Element == UnicodeScalar {
+	private var inputIterator: InputIterator
+	private var config: CSVConfig
+	var warnings = [CSVWarning]()
 	
-	init(characterStreamReader: CharacterStreamReader, config: CSVConfig) {
-		self.characterStreamReader = characterStreamReader
+	init(inputIterator: InputIterator, config: CSVConfig) {
+		self.inputIterator = inputIterator
 		self.config = config
 	}
 	
-	func nextToken() -> CSVToken {
-		guard let result = characterStreamReader.nextCharacter() else {
-			return CSVToken(type: .endOfFile, content: "")
-		}
-		guard let char = result.char else {
+	func next() -> CSVToken? {
+		guard let char = inputIterator.next() else {
 			return CSVToken(type: .endOfFile, content: "")
 		}
 		
@@ -298,17 +326,17 @@ class StreamTokenizer: CSVTokenizer {
 
 
 /*
-	CHARACTER READER
+Codepoint Iterators
 */
-class CharacterStreamReader {
-	typealias CharacterStreamResult = (char: UnicodeScalar?, warning: String?)
+
+let ItemReplacementChar = UnicodeScalar(0xFFFD)
+
+class UTF8CodepointIterator<InputIterator : IteratorProtocol> : Sequence, IteratorProtocol, WarningProducer where InputIterator.Element == UInt8 {
+	private var byteIterator: InputIterator
+	var warnings = [CSVWarning]()
 	
-	static let ItemReplacementChar = UnicodeScalar(0xFFFD)
-	
-	private let byteReader: ByteReader
-	
-	init(byteReader: ByteReader) {
-		self.byteReader = byteReader
+	init(byteIterator: InputIterator) {
+		self.byteIterator = byteIterator
 	}
 	
 	private var returnedByte: UInt8?
@@ -318,7 +346,13 @@ class CharacterStreamReader {
 			returnedByte = nil
 			return b
 		}
-		return byteReader.nextByte()
+		let nextByte = byteIterator.next()
+		if var wp = byteIterator as? WarningProducer {
+			while let w = wp.nextWarning() {
+				warnings.append(w)
+			}
+		}
+		return nextByte
 	}
 	
 	private func returnByte(_ byte: UInt8) {
@@ -328,36 +362,42 @@ class CharacterStreamReader {
 		returnedByte = byte
 	}
 	
-	func nextCharacter() -> CharacterStreamResult? {
+	
+	func nextWarning() -> CSVWarning? {
+		return warnings.isEmpty ? nil : warnings.removeFirst()
+	}
+	
+	func next() -> UnicodeScalar? {
 		guard let byte = nextByte() else {
 			return nil
 		}
 		
 		// single byte
 		if (byte & 0b1000_0000) == 0 {
-			return (UnicodeScalar(byte), nil)
+			return UnicodeScalar(byte)
 		}
 		
 		// continuation byte
 		else if (byte & 0b0100_0000) == 0 {
-			return (CharacterStreamReader.ItemReplacementChar, "Continuation byte at invalid position")
+			warnings.append(CSVWarning(text:"Continuation byte at invalid position"))
+			return ItemReplacementChar
 		}
 		
 		// first byte of two byte group
 		else if (byte & 0b0010_0000) == 0 {
 			let a = byte
 			guard let b = nextByte() else {
-				return (CharacterStreamReader.ItemReplacementChar, "Expected second byte of group but found nil")
+				warnings.append(CSVWarning(text:"Expected second byte of group but found nil"))
+				return ItemReplacementChar
 			}
-			
 			guard (b & 0b1100_0000) == 0b1000_0000 else {
-				// put byte back
 				returnByte(b)
-				return (CharacterStreamReader.ItemReplacementChar, "Expected continuation byte")
+				warnings.append(CSVWarning(text: "Expected continuation byte"))
+				return ItemReplacementChar
 			}
 			
 			let res = UInt32(b & 0b111111) + (UInt32(a & 0b11111) << 6)
-			return (UnicodeScalar(res), nil)
+			return UnicodeScalar(res)
 		}
 		
 		// first byte of three byte group
@@ -365,27 +405,26 @@ class CharacterStreamReader {
 			
 			let a = byte
 			guard let b = nextByte() else {
-				return (nil, "Expected second byte of group but found nil")
+				warnings.append(CSVWarning(text: "Expected second byte of group but found nil"))
+				return ItemReplacementChar
 			}
-			
 			guard (b & 0b1100_0000) == 0b1000_0000 else {
-				// put byte back
 				returnByte(b)
-				return (CharacterStreamReader.ItemReplacementChar, "Expected continuation byte")
+				warnings.append(CSVWarning(text: "Expected continuation byte"))
+				return ItemReplacementChar
 			}
-			
 			guard let c = nextByte() else {
-				return (nil, "Expected third byte of group but found nil")
+				warnings.append(CSVWarning(text: "Expected third byte of group but found nil"))
+				return ItemReplacementChar
 			}
-			
 			guard (c & 0b1100_0000) == 0b1000_0000 else {
-				// put byte back
 				returnByte(c)
-				return (CharacterStreamReader.ItemReplacementChar, "Expected continuation byte")
+				warnings.append(CSVWarning(text: "Expected continuation byte"))
+				return ItemReplacementChar
 			}
 			
 			let res = UInt32(c & 0b111111) + (UInt32(b & 0b111111) << 6) + (UInt32(a & 0b1111) << 12)
-			return (UnicodeScalar(res), nil)
+			return UnicodeScalar(res)
 		}
 		
 		// first byte of four byte group
@@ -393,40 +432,56 @@ class CharacterStreamReader {
 			
 			let a = byte
 			guard let b = nextByte() else {
-				return (nil, "Expected second byte of group but found nil")
+				warnings.append(CSVWarning(text: "Expected second byte of group but found nil"))
+				return ItemReplacementChar
+			}
+			guard (b & 0b1100_0000) == 0b1000_0000 else {
+				returnByte(b)
+				warnings.append(CSVWarning(text: "Expected continuation byte"))
+				return ItemReplacementChar
 			}
 			guard let c = nextByte() else {
-				return (nil, "Expected third byte of group but found nil")
+				warnings.append(CSVWarning(text: "Expected third byte of group but found nil"))
+				return ItemReplacementChar
+			}
+			guard (c & 0b1100_0000) == 0b1000_0000 else {
+				returnByte(c)
+				warnings.append(CSVWarning(text: "Expected continuation byte"))
+				return ItemReplacementChar
 			}
 			guard let d = nextByte() else {
-				return (nil, "Expected fourth byte of group but found nil")
+				warnings.append(CSVWarning(text: "Expected fourth byte of group but found nil"))
+				return ItemReplacementChar
+			}
+			guard (d & 0b1100_0000) == 0b1000_0000 else {
+				returnByte(d)
+				warnings.append(CSVWarning(text: "Expected continuation byte"))
+				return ItemReplacementChar
 			}
 			
 			let res = UInt32(d & 0b111111) + (UInt32(c & 0b111111) << 6) + (UInt32(b & 0b111111) << 12) + (UInt32(a & 0b1111) << 18)
-			return (UnicodeScalar(res), nil)
+			return UnicodeScalar(res)
 			
 		}
 		
 		// invalid byte
 		else {
-			return (CharacterStreamReader.ItemReplacementChar, "Invalid byte")
+			warnings.append(CSVWarning(text: "Invalid byte"))
+			return ItemReplacementChar
 		}
-		
 	}
 }
 
 
 
 /*
-	BYTE READER
+Byte Iterators
 */
-protocol ByteReader {
-	func nextByte() -> UInt8?
-}
 
-class ByteStreamReader: ByteReader {
+class FileByteIterator : Sequence, IteratorProtocol, WarningProducer {
 	private let fileURL: URL
 	private var fileHandle: FileHandle?
+	var warnings = [CSVWarning]()
 	
 	init(fileURL: URL) {
 		self.fileURL = fileURL
@@ -437,9 +492,12 @@ class ByteStreamReader: ByteReader {
 		fileHandle = nil
 	}
 	
-	func nextByte() -> UInt8? {
+	func next() -> UInt8? {
 		if fileHandle == nil {
 			fileHandle = FileHandle(forReadingAtPath: fileURL.path)
+			if fileHandle == nil {
+				warnings.append(CSVWarning(text: "File \(fileURL.lastPathComponent) could not be opened"))
+			}
 		}
 		
 		guard let data = fileHandle?.readData(ofLength: 1), data.count > 0 else { return nil }
@@ -450,21 +508,21 @@ class ByteStreamReader: ByteReader {
 	}
 }
 
-class ByteDataReader: ByteReader {
+class DataByteIterator : Sequence, IteratorProtocol, WarningProducer {
 	private var data: Data
 	private var index: Int = 0
+	var warnings = [CSVWarning]()
 	
 	init(data: Data) {
 		self.data = data
 	}
 	
-	func nextByte() -> UInt8? {
+	func next() -> UInt8? {
 		if index < data.count {
 			let byte = data[index]
 			index += 1
 			return byte
 		}
 		return nil
-		
 	}
 }

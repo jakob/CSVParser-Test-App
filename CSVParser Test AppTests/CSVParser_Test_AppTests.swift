@@ -23,7 +23,7 @@ class CSVParser_Test_AppTests: XCTestCase {
 	/*
 	Basic Tests
 	*/
-	
+	/*
 	func testTokenizerBasic() {
 		let data = "1,2,3\n4,\"5\",6".data(using: .utf8)!
 		let expectedTokens = [
@@ -47,7 +47,7 @@ class CSVParser_Test_AppTests: XCTestCase {
 		
 		var tokens = [CSVToken]()
 		repeat {
-			tokens.append(tokenizer.nextToken())
+			tokens.append(tokenizer.next())
 		} while tokens.last!.type != .endOfFile
 		
 		XCTAssertEqual(tokens.count, expectedTokens.count, "Did not receive expected number of tokens")
@@ -99,13 +99,13 @@ class CSVParser_Test_AppTests: XCTestCase {
 		}
 		
 	}
-	
+	*/
 	
 	
 	/*
 	Reading Test Documents
 	*/
-	
+	/*
 	func testUTF8() {
 		let fileURL = Bundle(for: type(of: self)).url(forResource: "Reading Test Documents/utf-8", withExtension: "csv")!
 		
@@ -126,7 +126,7 @@ class CSVParser_Test_AppTests: XCTestCase {
 			}
 		}
 	}
-	
+	*/
 	
 	func testBlankLines() {
 		let fileURL = Bundle(for: type(of: self)).url(forResource: "Reading Test Documents/blank-lines", withExtension: "csv")!
