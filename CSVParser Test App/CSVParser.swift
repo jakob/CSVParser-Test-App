@@ -64,19 +64,42 @@ enum CSVParsingMode {
 
 
 /*
-WarningProducer
+WarningProducer / Iterators
 */
 
 protocol WarningProducer {
-	var warnings: [CSVWarning] { get set }
+	mutating func nextWarning() -> CSVWarning?
 }
 
-extension WarningProducer {
-	mutating func addWarning(_ warning: CSVWarning) {
-		warnings.append(warning)
+
+class IteratorWithWarnings<Element>: IteratorProtocol, WarningProducer {
+	var warnings = [CSVWarning]()
+	
+	func next() -> Element? {
+		fatalError("This method is abstract")
 	}
-	mutating func nextWarning() -> CSVWarning? {
-		return warnings.isEmpty ? nil : warnings.removeFirst()
+	
+	func nextWarning() -> CSVWarning? {
+		fatalError("This method is abstract")
+	}
+}
+
+class ConcreteIteratorWithWarnings<I: IteratorProtocol>: IteratorWithWarnings<I.Element> {
+	var iterator: I
+	
+	init(_ iterator: I) {
+		self.iterator = iterator
+	}
+	
+	override func next() -> I.Element? {
+		return iterator.next()
+	}
+	
+	override func nextWarning() -> CSVWarning? {
+		if var warningProducer = iterator as? WarningProducer {
+			return warningProducer.nextWarning()
+		}
+		return nil
 	}
 }
 
@@ -86,65 +109,67 @@ extension WarningProducer {
 Document
 */
 
-class CSVDocument : Sequence {
+class CSVDocument: Sequence {
 	private let fileURL: URL?
 	private let sourceData: Data?
+	private let sourceString: String?
 	private let config: CSVConfig
 	var warnings = [CSVWarning]()
 	
 	init(fileURL: URL, config: CSVConfig = CSVConfig()) {
 		self.fileURL = fileURL
 		self.sourceData = nil
+		self.sourceString = nil
 		self.config = config
 	}
 	
 	init(data: Data, config: CSVConfig = CSVConfig()) {
 		self.fileURL = nil
 		self.sourceData = data
+		self.sourceString = nil
 		self.config = config
 	}
 	
-	var csvParser: CSVParser<StreamTokenizer<UTF8CodepointIterator<FileByteIterator>>>  {
-//		let byteIterator: WarningProducer
-//		if let url = fileURL {
-//			byteIterator = FileByteIterator(fileURL: url)
-//		}
-//		else if let data = sourceData {
-//			byteIterator = DataByteIterator(data: data)
-//		}
-//		else {
-//			fatalError("This should be unreachable")
-//		}
-//		
-//		let codepointIterator: InputIterator
-//		if config.encoding == .utf8 {
-//			codepointIterator = UTF8CodepointIterator(byteIterator: byteIterator)
-//		} else {
-//			fatalError("Unsupported Character Encoding")
-//		}
-//		
-//		let tokenizer = StreamTokenizer(inputIterator: codepointIterator, config: config)
-//		let parser = CSVParser(tokenizer: tokenizer)
-//		return parser
+	init(string: String, config: CSVConfig = CSVConfig()) {
+		self.fileURL = nil
+		self.sourceData = nil
+		self.sourceString = string
+		self.config = config
+	}
+
+	
+	func makeIterator() -> IteratorWithWarnings<[String]> {
+		return ConcreteIteratorWithWarnings(SimpleParser(parser: makeCSVValueIterator()))
+	}
+	
+	func makeCSVValueIterator() -> IteratorWithWarnings<[CSVValue]> {
+		let codepointIterator: IteratorWithWarnings<UnicodeScalar>
 		
-		
-		if let url = fileURL {
-			let byteIterator = FileByteIterator(fileURL: url)
-			let codepointIterator = UTF8CodepointIterator(byteIterator: byteIterator)
-			let tokenizer = StreamTokenizer(inputIterator: codepointIterator, config: config)
-			let parser = CSVParser(inputIterator: tokenizer, config: config)
-			return parser
-		} else {
-			fatalError("Unsupported Configuration")
+		if let str = sourceString {
+			codepointIterator = ConcreteIteratorWithWarnings(str.unicodeScalars.makeIterator())
 		}
-	}
-	
-	var simpleParser: SimpleParser<StreamTokenizer<UTF8CodepointIterator<FileByteIterator>>> {
-		return SimpleParser(parser: csvParser)
-	}
-	
-	func makeIterator() -> SimpleParser<StreamTokenizer<UTF8CodepointIterator<FileByteIterator>>> {
-		return simpleParser
+		else {
+			let byteIterator: IteratorWithWarnings<UInt8>
+			if let url = fileURL {
+				byteIterator = ConcreteIteratorWithWarnings(FileByteIterator(fileURL: url))
+			}
+			else if let data = sourceData {
+				byteIterator = ConcreteIteratorWithWarnings(DataByteIterator(data: data))
+			}
+			else {
+				fatalError("This should be unreachable")
+			}
+			if config.encoding == .utf8 {
+				codepointIterator = ConcreteIteratorWithWarnings(UTF8CodepointIterator(byteIterator: byteIterator))
+			} else {
+				fatalError("Unsupported Character Encoding")
+			}
+
+		}
+		
+		let tokenizer = TokenIterator(inputIterator: codepointIterator, config: config)
+		let parser = CSVParser(inputIterator: tokenizer, config: config)
+		return ConcreteIteratorWithWarnings(parser)
 	}
 	
 }
@@ -235,12 +260,16 @@ class CSVParser<InputIterator : IteratorProtocol> : Sequence, IteratorProtocol, 
 			token = nextToken
 		}
 	}
+	
+	func nextWarning() -> CSVWarning? {
+		return warnings.isEmpty ? nil : warnings.removeFirst()
+	}
 }
 
-class SimpleParser<InputIterator : IteratorProtocol> : Sequence, IteratorProtocol where InputIterator.Element == CSVToken {
-	let parser: CSVParser<InputIterator>
+class SimpleParser<InputIterator: IteratorProtocol & WarningProducer> : Sequence, IteratorProtocol, WarningProducer where InputIterator.Element == [CSVValue] {
+	var parser: InputIterator
 	
-	init(parser: CSVParser<InputIterator>) {
+	init(parser: InputIterator) {
 		self.parser = parser
 	}
 	
@@ -248,52 +277,21 @@ class SimpleParser<InputIterator : IteratorProtocol> : Sequence, IteratorProtoco
 		guard let values = parser.next() else { return nil }
 		return values.map { $0.value ?? "" }
 	}
+	
+	func nextWarning() -> CSVWarning? {
+		return parser.nextWarning()
+	}
 }
 
 
 
 /*
-Tokenizers
+TokenIterators
 */
 
-class UTF8DataTokenizer : Sequence, IteratorProtocol, WarningProducer {
-	private var string: String
-	private var config: CSVConfig
-	var warnings = [CSVWarning]()
-	
-	init(data: Data, config: CSVConfig) {
-		self.string = String(bytes: data, encoding: .utf8)!
-		self.config = config
-	}
-	
-	func next() -> CSVToken? {
-		if string.isEmpty {
-			return CSVToken(type: .endOfFile, content: "")
-		}
-		
-		let char = string.remove(at: string.startIndex)
-		let type: CSVToken.TokenType
-		
-		switch char {
-		case config.delimiterCharacter:
-			type = .delimiter
-		case config.newlineCharacter:
-			type = .lineSeparator
-		case config.quoteCharacter:
-			type = .quote
-		default:
-			type = .character
-		}
-		
-		let token = CSVToken(type: type, content: String(char))
-		return token
-	}
-}
-
-class StreamTokenizer<InputIterator : IteratorProtocol> : Sequence, IteratorProtocol, WarningProducer where InputIterator.Element == UnicodeScalar {
+class TokenIterator<InputIterator: IteratorProtocol>: Sequence, IteratorProtocol, WarningProducer where InputIterator.Element == UnicodeScalar {
 	private var inputIterator: InputIterator
 	private var config: CSVConfig
-	var warnings = [CSVWarning]()
 	
 	init(inputIterator: InputIterator, config: CSVConfig) {
 		self.inputIterator = inputIterator
@@ -321,6 +319,13 @@ class StreamTokenizer<InputIterator : IteratorProtocol> : Sequence, IteratorProt
 		let token = CSVToken(type: type, content: String(char))
 		return token
 	}
+	
+	func nextWarning() -> CSVWarning? {
+		if var warningProducer = inputIterator as? WarningProducer {
+			return warningProducer.nextWarning()
+		}
+		return nil
+	}
 }
 
 
@@ -331,7 +336,7 @@ Codepoint Iterators
 
 let ItemReplacementChar = UnicodeScalar(0xFFFD)
 
-class UTF8CodepointIterator<InputIterator : IteratorProtocol> : Sequence, IteratorProtocol, WarningProducer where InputIterator.Element == UInt8 {
+class UTF8CodepointIterator<InputIterator: IteratorProtocol>: Sequence, IteratorProtocol, WarningProducer where InputIterator.Element == UInt8 {
 	private var byteIterator: InputIterator
 	var warnings = [CSVWarning]()
 	
@@ -347,8 +352,8 @@ class UTF8CodepointIterator<InputIterator : IteratorProtocol> : Sequence, Iterat
 			return b
 		}
 		let nextByte = byteIterator.next()
-		if var wp = byteIterator as? WarningProducer {
-			while let w = wp.nextWarning() {
+		if var warningProducer = byteIterator as? WarningProducer {
+			while let w = warningProducer.nextWarning() {
 				warnings.append(w)
 			}
 		}
@@ -478,10 +483,11 @@ class UTF8CodepointIterator<InputIterator : IteratorProtocol> : Sequence, Iterat
 Byte Iterators
 */
 
-class FileByteIterator : Sequence, IteratorProtocol, WarningProducer {
+class FileByteIterator: Sequence, IteratorProtocol, WarningProducer {
+	internal var warnings = [CSVWarning]()
+
 	private let fileURL: URL
 	private var fileHandle: FileHandle?
-	var warnings = [CSVWarning]()
 	
 	init(fileURL: URL) {
 		self.fileURL = fileURL
@@ -506,18 +512,21 @@ class FileByteIterator : Sequence, IteratorProtocol, WarningProducer {
 		data.copyBytes(to: &byte, count: MemoryLayout<UInt8>.size)
 		return byte
 	}
+	
+	func nextWarning() -> CSVWarning? {
+		return warnings.isEmpty ? nil : warnings.removeFirst()
+	}
 }
 
-class DataByteIterator : Sequence, IteratorProtocol, WarningProducer {
+class DataByteIterator: IteratorWithWarnings<UInt8> { //Sequence, IteratorProtocol, WarningProducer
 	private var data: Data
 	private var index: Int = 0
-	var warnings = [CSVWarning]()
 	
 	init(data: Data) {
 		self.data = data
 	}
 	
-	func next() -> UInt8? {
+	override func next() -> UInt8? {
 		if index < data.count {
 			let byte = data[index]
 			index += 1

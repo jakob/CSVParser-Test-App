@@ -128,6 +128,22 @@ class CSVParser_Test_AppTests: XCTestCase {
 	}
 	*/
 	
+	func testDocumentFromString() {
+		let csvDoc = CSVDocument(string: "1,2,3")
+		var actual = Array(csvDoc)
+		
+		let expected = [
+			["1","2","3"]
+		]
+		
+		XCTAssertEqual(actual.count, expected.count, "Did not receive expected number of lines")
+		
+		for i in actual.indices where expected.indices.contains(i) {
+			XCTAssertEqual(actual[i].count, expected[i].count, "Line \(i) does not have expected length")
+			XCTAssertEqual(actual[i], expected[i], "Line \(i) is not equal")
+		}
+	}
+	
 	func testBlankLines() {
 		let fileURL = Bundle(for: type(of: self)).url(forResource: "Reading Test Documents/blank-lines", withExtension: "csv")!
 		let csvDoc = CSVDocument(fileURL: fileURL)
