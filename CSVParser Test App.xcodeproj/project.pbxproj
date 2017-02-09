@@ -9,7 +9,12 @@
 /* Begin PBXBuildFile section */
 		8312E24E1E3F5AEB00435F89 /* Heuristic Test Documents in Resources */ = {isa = PBXBuildFile; fileRef = 8312E24C1E3F5AEB00435F89 /* Heuristic Test Documents */; };
 		8312E24F1E3F5AEB00435F89 /* Reading Test Documents in Resources */ = {isa = PBXBuildFile; fileRef = 8312E24D1E3F5AEB00435F89 /* Reading Test Documents */; };
-		834E5D311E43616A002BFC11 /* CSVParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 834E5D301E43616A002BFC11 /* CSVParser.swift */; };
+		834E5D311E43616A002BFC11 /* DataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 834E5D301E43616A002BFC11 /* DataTypes.swift */; };
+		8359541E1E49D78500D1F0DF /* ByteIterators.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8359541D1E49D78500D1F0DF /* ByteIterators.swift */; };
+		835954201E49D7CF00D1F0DF /* CodepointIterators.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8359541F1E49D7CF00D1F0DF /* CodepointIterators.swift */; };
+		835954221E49D80000D1F0DF /* TokenIterators.swift in Sources */ = {isa = PBXBuildFile; fileRef = 835954211E49D80000D1F0DF /* TokenIterators.swift */; };
+		835954241E49D85000D1F0DF /* Parsers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 835954231E49D85000D1F0DF /* Parsers.swift */; };
+		835954261E49D88F00D1F0DF /* CSVDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = 835954251E49D88F00D1F0DF /* CSVDocument.swift */; };
 		83E5869B1E2D35B20058879B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83E5869A1E2D35B20058879B /* AppDelegate.swift */; };
 		83E5869F1E2D35B20058879B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 83E5869E1E2D35B20058879B /* Assets.xcassets */; };
 		83E586A21E2D35B20058879B /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 83E586A01E2D35B20058879B /* Main.storyboard */; };
@@ -29,7 +34,12 @@
 /* Begin PBXFileReference section */
 		8312E24C1E3F5AEB00435F89 /* Heuristic Test Documents */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "Heuristic Test Documents"; sourceTree = "<group>"; };
 		8312E24D1E3F5AEB00435F89 /* Reading Test Documents */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "Reading Test Documents"; sourceTree = "<group>"; };
-		834E5D301E43616A002BFC11 /* CSVParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CSVParser.swift; sourceTree = "<group>"; };
+		834E5D301E43616A002BFC11 /* DataTypes.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataTypes.swift; sourceTree = "<group>"; };
+		8359541D1E49D78500D1F0DF /* ByteIterators.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ByteIterators.swift; sourceTree = "<group>"; };
+		8359541F1E49D7CF00D1F0DF /* CodepointIterators.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CodepointIterators.swift; sourceTree = "<group>"; };
+		835954211E49D80000D1F0DF /* TokenIterators.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TokenIterators.swift; sourceTree = "<group>"; };
+		835954231E49D85000D1F0DF /* Parsers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Parsers.swift; sourceTree = "<group>"; };
+		835954251E49D88F00D1F0DF /* CSVDocument.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CSVDocument.swift; sourceTree = "<group>"; };
 		83E586971E2D35B20058879B /* CSVParser Test App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "CSVParser Test App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		83E5869A1E2D35B20058879B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		83E5869E1E2D35B20058879B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -38,7 +48,6 @@
 		83E586A81E2D35B20058879B /* CSVParser Test AppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "CSVParser Test AppTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		83E586AC1E2D35B20058879B /* CSVParser_Test_AppTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSVParser_Test_AppTests.swift; sourceTree = "<group>"; };
 		83E586AE1E2D35B20058879B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		83E586B71E2D35F80058879B /* CSVParser_BAK.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CSVParser_BAK.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -81,8 +90,12 @@
 			isa = PBXGroup;
 			children = (
 				83E5869A1E2D35B20058879B /* AppDelegate.swift */,
-				83E586B71E2D35F80058879B /* CSVParser_BAK.swift */,
-				834E5D301E43616A002BFC11 /* CSVParser.swift */,
+				834E5D301E43616A002BFC11 /* DataTypes.swift */,
+				835954251E49D88F00D1F0DF /* CSVDocument.swift */,
+				835954231E49D85000D1F0DF /* Parsers.swift */,
+				835954211E49D80000D1F0DF /* TokenIterators.swift */,
+				8359541F1E49D7CF00D1F0DF /* CodepointIterators.swift */,
+				8359541D1E49D78500D1F0DF /* ByteIterators.swift */,
 				83E5869E1E2D35B20058879B /* Assets.xcassets */,
 				83E586A01E2D35B20058879B /* Main.storyboard */,
 				83E586A31E2D35B20058879B /* Info.plist */,
@@ -205,8 +218,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8359541E1E49D78500D1F0DF /* ByteIterators.swift in Sources */,
+				835954261E49D88F00D1F0DF /* CSVDocument.swift in Sources */,
+				835954221E49D80000D1F0DF /* TokenIterators.swift in Sources */,
+				835954201E49D7CF00D1F0DF /* CodepointIterators.swift in Sources */,
 				83E5869B1E2D35B20058879B /* AppDelegate.swift in Sources */,
-				834E5D311E43616A002BFC11 /* CSVParser.swift in Sources */,
+				835954241E49D85000D1F0DF /* Parsers.swift in Sources */,
+				834E5D311E43616A002BFC11 /* DataTypes.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
