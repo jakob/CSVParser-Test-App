@@ -244,7 +244,6 @@ class CSVParser_Test_AppTests: XCTestCase {
 		while let warning = iterator.nextWarning() {
 			print("WARNING: \(warning.text)")
 		}
-		
 	}
 	
 	func testMissingBackslashAfterValue() {
@@ -271,7 +270,196 @@ class CSVParser_Test_AppTests: XCTestCase {
 		while let warning = iterator.nextWarning() {
 			print("WARNING: \(warning.text)")
 		}
+	}
+	
+	func testMissingBackslashBeforeValue() {
+		let fileURL = Bundle(for: type(of: self)).url(forResource: "Reading Test Documents/missing-backslash-beforeValue", withExtension: "csv")!
+		let csvDoc = CSVDocument(fileURL: fileURL)
+		let iterator = csvDoc.makeIterator()
 		
+		let expected = [
+			["1","2","3"]
+		]
+		
+		var idx = 0
+		while let elem = iterator.next() {
+			while let warning = iterator.nextWarning() {
+				print("WARNING: \(warning.text)")
+			}
+			XCTAssertEqual(elem.count, expected[idx].count, "Line \(idx) does not have expected length")
+			XCTAssertEqual(elem, expected[idx], "Line \(idx) is not equal")
+			idx += 1
+		}
+		
+		XCTAssertEqual(idx, expected.count, "Did not receive expected number of lines")
+		
+		while let warning = iterator.nextWarning() {
+			print("WARNING: \(warning.text)")
+		}
+	}
+	
+	func testMissingQuoteAtEnd() {
+		let fileURL = Bundle(for: type(of: self)).url(forResource: "Reading Test Documents/missing-quote-atEnd", withExtension: "csv")!
+		let csvDoc = CSVDocument(fileURL: fileURL)
+		let iterator = csvDoc.makeIterator()
+		
+		let expected = [
+			["1","2","3"]
+		]
+		
+		var idx = 0
+		while let elem = iterator.next() {
+			while let warning = iterator.nextWarning() {
+				print("WARNING: \(warning.text)")
+			}
+			XCTAssertEqual(elem.count, expected[idx].count, "Line \(idx) does not have expected length")
+			XCTAssertEqual(elem, expected[idx], "Line \(idx) is not equal")
+			idx += 1
+		}
+		
+		XCTAssertEqual(idx, expected.count, "Did not receive expected number of lines")
+		
+		while let warning = iterator.nextWarning() {
+			print("WARNING: \(warning.text)")
+		}
+	}
+	
+	func testMissingValueForBackslashInQuote() {
+		let fileURL = Bundle(for: type(of: self)).url(forResource: "Reading Test Documents/missing-value-for-backslash-inquote", withExtension: "csv")!
+		let csvDoc = CSVDocument(fileURL: fileURL)
+		let iterator = csvDoc.makeIterator()
+		
+		let expected = [
+			["1","\""]
+		]
+		
+		var idx = 0
+		while let elem = iterator.next() {
+			while let warning = iterator.nextWarning() {
+				print("WARNING: \(warning.text)")
+			}
+			XCTAssertEqual(elem.count, expected[idx].count, "Line \(idx) does not have expected length")
+			XCTAssertEqual(elem, expected[idx], "Line \(idx) is not equal")
+			idx += 1
+		}
+		
+		XCTAssertEqual(idx, expected.count, "Did not receive expected number of lines")
+		
+		while let warning = iterator.nextWarning() {
+			print("WARNING: \(warning.text)")
+		}
+	}
+	
+	func testMissingValueForBackslash() {
+		let fileURL = Bundle(for: type(of: self)).url(forResource: "Reading Test Documents/missing-value-for-backslash", withExtension: "csv")!
+		let csvDoc = CSVDocument(fileURL: fileURL)
+		let iterator = csvDoc.makeIterator()
+		
+		let expected = [
+			["1","\""]
+		]
+		
+		var idx = 0
+		while let elem = iterator.next() {
+			while let warning = iterator.nextWarning() {
+				print("WARNING: \(warning.text)")
+			}
+			XCTAssertEqual(elem.count, expected[idx].count, "Line \(idx) does not have expected length")
+			XCTAssertEqual(elem, expected[idx], "Line \(idx) is not equal")
+			idx += 1
+		}
+		
+		XCTAssertEqual(idx, expected.count, "Did not receive expected number of lines")
+		
+		while let warning = iterator.nextWarning() {
+			print("WARNING: \(warning.text)")
+		}
+	}
+	
+	func testQuoteBackslashEscape() {
+		var config = CSVConfig()
+		config.delimiterCharacter = ";"
+		let fileURL = Bundle(for: type(of: self)).url(forResource: "Reading Test Documents/quote-backslash-escape", withExtension: "csv")!
+		let csvDoc = CSVDocument(fileURL: fileURL, config: config)
+		let iterator = csvDoc.makeIterator()
+		
+		let expected = [
+			["test\" test","test"],
+			["1.2","1,3"]
+		]
+		
+		var idx = 0
+		while let elem = iterator.next() {
+			while let warning = iterator.nextWarning() {
+				print("WARNING: \(warning.text)")
+			}
+			XCTAssertEqual(elem.count, expected[idx].count, "Line \(idx) does not have expected length")
+			XCTAssertEqual(elem, expected[idx], "Line \(idx) is not equal")
+			idx += 1
+		}
+		
+		XCTAssertEqual(idx, expected.count, "Did not receive expected number of lines")
+		
+		while let warning = iterator.nextWarning() {
+			print("WARNING: \(warning.text)")
+		}
+	}
+	
+	func testQuoteInUnquotedValue() {
+		var config = CSVConfig()
+		config.delimiterCharacter = ";"
+		let fileURL = Bundle(for: type(of: self)).url(forResource: "Reading Test Documents/quote-in-unquoted-value", withExtension: "csv")!
+		let csvDoc = CSVDocument(fileURL: fileURL, config: config)
+		let iterator = csvDoc.makeIterator()
+		
+		let expected = [
+			["iPhone5 Display","444"]
+		]
+		
+		var idx = 0
+		while let elem = iterator.next() {
+			while let warning = iterator.nextWarning() {
+				print("WARNING: \(warning.text)")
+			}
+			XCTAssertEqual(elem.count, expected[idx].count, "Line \(idx) does not have expected length")
+			XCTAssertEqual(elem, expected[idx], "Line \(idx) is not equal")
+			idx += 1
+		}
+		
+		XCTAssertEqual(idx, expected.count, "Did not receive expected number of lines")
+		
+		while let warning = iterator.nextWarning() {
+			print("WARNING: \(warning.text)")
+		}
+	}
+	
+	func testQuoteQuoteEscape() {
+		var config = CSVConfig()
+		config.delimiterCharacter = ";"
+		let fileURL = Bundle(for: type(of: self)).url(forResource: "Reading Test Documents/quote-quote-escape", withExtension: "csv")!
+		let csvDoc = CSVDocument(fileURL: fileURL, config: config)
+		let iterator = csvDoc.makeIterator()
+		
+		let expected = [
+			["test\"\" test","test"],
+			["1.2","1,3"]
+		]
+		
+		var idx = 0
+		while let elem = iterator.next() {
+			while let warning = iterator.nextWarning() {
+				print("WARNING: \(warning.text)")
+			}
+			XCTAssertEqual(elem.count, expected[idx].count, "Line \(idx) does not have expected length")
+			XCTAssertEqual(elem, expected[idx], "Line \(idx) is not equal")
+			idx += 1
+		}
+		
+		XCTAssertEqual(idx, expected.count, "Did not receive expected number of lines")
+		
+		while let warning = iterator.nextWarning() {
+			print("WARNING: \(warning.text)")
+		}
 	}
 	
 	func testSemicolonSeparated() {
@@ -302,6 +490,33 @@ class CSVParser_Test_AppTests: XCTestCase {
 		while let warning = iterator.nextWarning() {
 			print("WARNING: \(warning.text)")
 		}
+	}
+	
+	func testTooManyQuotesAtEnd() {
+		var config = CSVConfig()
+		config.delimiterCharacter = ";"
+		let fileURL = Bundle(for: type(of: self)).url(forResource: "Reading Test Documents/tooMany-quotes-atEnd", withExtension: "csv")!
+		let csvDoc = CSVDocument(fileURL: fileURL, config: config)
+		let iterator = csvDoc.makeIterator()
 		
+		let expected = [
+			["1",""]
+		]
+		
+		var idx = 0
+		while let elem = iterator.next() {
+			while let warning = iterator.nextWarning() {
+				print("WARNING: \(warning.text)")
+			}
+			XCTAssertEqual(elem.count, expected[idx].count, "Line \(idx) does not have expected length")
+			XCTAssertEqual(elem, expected[idx], "Line \(idx) is not equal")
+			idx += 1
+		}
+		
+		XCTAssertEqual(idx, expected.count, "Did not receive expected number of lines")
+		
+		while let warning = iterator.nextWarning() {
+			print("WARNING: \(warning.text)")
+		}
 	}
 }
