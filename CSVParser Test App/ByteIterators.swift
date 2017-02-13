@@ -44,7 +44,7 @@ class FileByteIterator: Sequence, IteratorProtocol, WarningProducer {
 }
 
 class DataByteIterator: Sequence, IteratorProtocol {
-	private var data: Data
+	private let data: Data
 	private var index: Int = 0
 	
 	init(data: Data) {

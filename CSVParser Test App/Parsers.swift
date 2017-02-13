@@ -8,7 +8,7 @@
 
 import Foundation
 
-class CSVParser<InputIterator : IteratorProtocol> : Sequence, IteratorProtocol, WarningProducer where InputIterator.Element == CSVToken {
+class CSVParser<InputIterator: IteratorProtocol>: Sequence, IteratorProtocol, WarningProducer where InputIterator.Element == CSVToken {
 	private var inputIterator: InputIterator
 	private var config: CSVConfig
 	var warnings = [CSVWarning]()
