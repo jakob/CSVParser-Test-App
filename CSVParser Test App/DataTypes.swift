@@ -3,7 +3,7 @@
 //  CSVParser Test App
 //
 //  Created by Chris on 02/02/2017.
-//  Copyright © 2017 chrispysoft. All rights reserved.
+//  Copyright © 2017 Egger Apps. All rights reserved.
 //
 
 import Foundation
