@@ -15,10 +15,6 @@ struct CSVConfig {
 	var escapeCharacter: Character = "\\"
 	var decimalCharacter: Character = "."
 	var newlineCharacter: Character = "\n"
-	var firstRowAsHeader = false
-	var description: String {
-		return "encoding: '\(encoding)', delimiter: '\(delimiterCharacter)', quote: '\(quoteCharacter)', escape: '\(escapeCharacter)', decimal: '\(decimalCharacter)', firstRowAsHeader: \(firstRowAsHeader)"
-	}
 }
 
 struct CSVToken: Equatable {
@@ -57,13 +53,26 @@ enum CSVParsingMode {
 	case afterQuote
 }
 
+struct CurrentPosition {
+	var totalBytes: Int? = 0
+	var totalScalars: Int? = 0
+	var byteOffset: Int? = 0
+	var scalarOffset: Int? = 0
+	var lineOffset: Int? = 0
+	var rowOffset: Int? = 0
+}
+
 
 
 protocol WarningProducer {
 	mutating func nextWarning() -> CSVWarning?
 }
 
-class IteratorWithWarnings<Element>: IteratorProtocol, WarningProducer {
+protocol PositionRetriever {
+	func currentPosition() -> CurrentPosition?
+}
+
+class IteratorWithWarnings<Element>: IteratorProtocol, WarningProducer, PositionRetriever {
 	var warnings = [CSVWarning]()
 	
 	func next() -> Element? {
@@ -71,6 +80,10 @@ class IteratorWithWarnings<Element>: IteratorProtocol, WarningProducer {
 	}
 	
 	func nextWarning() -> CSVWarning? {
+		fatalError("This method is abstract")
+	}
+	
+	func currentPosition() -> CurrentPosition? {
 		fatalError("This method is abstract")
 	}
 }
@@ -89,6 +102,13 @@ class ConcreteIteratorWithWarnings<I: IteratorProtocol>: IteratorWithWarnings<I.
 	override func nextWarning() -> CSVWarning? {
 		if var warningProducer = iterator as? WarningProducer {
 			return warningProducer.nextWarning()
+		}
+		return nil
+	}
+	
+	override func currentPosition() -> CurrentPosition? {
+		if let positionRetriever = iterator as? PositionRetriever {
+			return positionRetriever.currentPosition()
 		}
 		return nil
 	}

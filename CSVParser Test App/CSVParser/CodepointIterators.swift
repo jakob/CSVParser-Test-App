@@ -10,11 +10,13 @@ import Foundation
 
 let ItemReplacementChar = UnicodeScalar(0xFFFD)
 
-class UTF8CodepointIterator<InputIterator: IteratorProtocol>: Sequence, IteratorProtocol, WarningProducer where InputIterator.Element == UInt8 {
+class UTF8CodepointIterator<InputIterator: IteratorProtocol>: Sequence, IteratorProtocol, WarningProducer, PositionRetriever where InputIterator.Element == UInt8 {
 	internal var warnings = [CSVWarning]()
 	
 	private var inputIterator: InputIterator
 	private var returnedByte: UInt8?
+	private var totalScalars = 0
+	private var scalarOffset = 0
 	
 	
 	init(inputIterator: InputIterator) {
@@ -155,5 +157,15 @@ class UTF8CodepointIterator<InputIterator: IteratorProtocol>: Sequence, Iterator
 	
 	func nextWarning() -> CSVWarning? {
 		return warnings.isEmpty ? nil : warnings.removeFirst()
+	}
+	
+	func currentPosition() -> CurrentPosition? {
+		if let positionRetriever = inputIterator as? PositionRetriever {
+			var currPos = positionRetriever.currentPosition()
+			currPos?.totalScalars = totalScalars
+			currPos?.scalarOffset = scalarOffset
+			return currPos
+		}
+		return nil
 	}
 }

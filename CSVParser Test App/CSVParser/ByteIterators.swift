@@ -8,11 +8,13 @@
 
 import Foundation
 
-class FileByteIterator: Sequence, IteratorProtocol, WarningProducer {
+class FileByteIterator: Sequence, IteratorProtocol, WarningProducer, PositionRetriever {
 	internal var warnings = [CSVWarning]()
 	
 	private let fileURL: URL
 	private var fileHandle: FileHandle?
+	private let totalBytes = 0
+	private var byteOffset = 0
 	
 	init(fileURL: URL) {
 		self.fileURL = fileURL
@@ -40,6 +42,13 @@ class FileByteIterator: Sequence, IteratorProtocol, WarningProducer {
 	
 	func nextWarning() -> CSVWarning? {
 		return warnings.isEmpty ? nil : warnings.removeFirst()
+	}
+	
+	func currentPosition() -> CurrentPosition? {
+		var currPos = CurrentPosition()
+		currPos.totalBytes = totalBytes
+		currPos.byteOffset = byteOffset
+		return currPos
 	}
 }
 
