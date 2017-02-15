@@ -97,6 +97,28 @@ class CSVParser_Test_AppTests: XCTestCase {
 		}
 	}
 	
+	func testLatin1() {
+		let testString = "aäu"
+		let testData = testString.data(using: .isoLatin1)!
+		
+		let byteIterator = DataByteIterator(data: testData)
+		let codepointIterator = UTF8CodepointIterator(inputIterator: byteIterator)
+		
+		let expected = ["a","ä","u"]
+		
+		var i = 0
+		while let char = codepointIterator.next(), expected.indices.contains(i) {
+			while let warning = codepointIterator.nextWarning() {
+				print("WARNING: \(warning.text)")
+			}
+			
+			XCTAssertEqual(String(char), expected[i], "Character \(i) is not equal")
+			i += 1
+		}
+		XCTAssertEqual(i,3)
+	}
+
+	
 	func testBlankLines() {
 		let fileURL = Bundle(for: type(of: self)).url(forResource: "Reading Test Documents/blank-lines", withExtension: "csv")!
 		let csvDoc = CSVDocument(fileURL: fileURL)
