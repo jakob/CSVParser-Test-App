@@ -8,7 +8,7 @@
 
 import Foundation
 
-class CSVParser<InputIterator: IteratorProtocol>: Sequence, IteratorProtocol, WarningProducer where InputIterator.Element == CSVToken {
+class CSVParser<InputIterator: IteratorProtocol>: Sequence, IteratorProtocol, WarningProducer, PositionRetriever where InputIterator.Element == CSVToken {
 	private var inputIterator: InputIterator
 	private var config: CSVConfig
 	var warnings = [CSVWarning]()
@@ -96,21 +96,39 @@ class CSVParser<InputIterator: IteratorProtocol>: Sequence, IteratorProtocol, Wa
 	func nextWarning() -> CSVWarning? {
 		return warnings.isEmpty ? nil : warnings.removeFirst()
 	}
+	
+	func currentPosition() -> CurrentPosition? {
+		if let positionRetriever = inputIterator as? PositionRetriever {
+			let currPos = positionRetriever.currentPosition()
+			
+			return currPos
+		}
+		return nil
+	}
 }
 
-class SimpleParser<InputIterator: IteratorProtocol & WarningProducer> : Sequence, IteratorProtocol, WarningProducer where InputIterator.Element == [CSVValue] {
-	var parser: InputIterator
+class SimpleParser<InputIterator: IteratorProtocol & WarningProducer> : Sequence, IteratorProtocol, WarningProducer, PositionRetriever where InputIterator.Element == [CSVValue] {
+	var inputIterator: InputIterator
 	
-	init(parser: InputIterator) {
-		self.parser = parser
+	init(inputIterator: InputIterator) {
+		self.inputIterator = inputIterator
 	}
 	
 	func next() -> [String]? {
-		guard let values = parser.next() else { return nil }
+		guard let values = inputIterator.next() else { return nil }
 		return values.map { $0.value ?? "" }
 	}
 	
 	func nextWarning() -> CSVWarning? {
-		return parser.nextWarning()
+		return inputIterator.nextWarning()
+	}
+	
+	func currentPosition() -> CurrentPosition? {
+		if let positionRetriever = inputIterator as? PositionRetriever {
+			let currPos = positionRetriever.currentPosition()
+			
+			return currPos
+		}
+		return nil
 	}
 }

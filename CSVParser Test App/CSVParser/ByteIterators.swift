@@ -13,11 +13,20 @@ class FileByteIterator: Sequence, IteratorProtocol, WarningProducer, PositionRet
 	
 	private let fileURL: URL
 	private var fileHandle: FileHandle?
-	private let totalBytes = 0
-	private var byteOffset = 0
+	private var byteOffset: UInt64 = 0
+	private var totalBytes: UInt64 = 0
 	
 	init(fileURL: URL) {
 		self.fileURL = fileURL
+		
+		do {
+			let attributes = try FileManager.default.attributesOfItem(atPath: fileURL.path)
+			if let fileSize = (attributes[FileAttributeKey.size] as? NSNumber)?.uint64Value {
+				totalBytes = fileSize
+			}
+		} catch {
+			warnings.append(CSVWarning(text: "Error getting filesize of \(fileURL.lastPathComponent)"))
+		}
 	}
 	
 	deinit {
@@ -28,6 +37,7 @@ class FileByteIterator: Sequence, IteratorProtocol, WarningProducer, PositionRet
 	func next() -> UInt8? {
 		if fileHandle == nil {
 			fileHandle = FileHandle(forReadingAtPath: fileURL.path)
+			
 			if fileHandle == nil {
 				warnings.append(CSVWarning(text: "File \(fileURL.lastPathComponent) could not be opened"))
 			}

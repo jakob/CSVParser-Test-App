@@ -54,12 +54,13 @@ enum CSVParsingMode {
 }
 
 struct CurrentPosition {
-	var totalBytes: Int? = 0
-	var totalScalars: Int? = 0
-	var byteOffset: Int? = 0
-	var scalarOffset: Int? = 0
-	var lineOffset: Int? = 0
-	var rowOffset: Int? = 0
+	var totalBytes: UInt64? = 0
+	var totalScalars: UInt64? = 0
+	var byteOffset: UInt64? = 0
+	var scalarOffset: UInt64? = 0
+	var tokenOffset: UInt64? = 0
+	var lineOffset: UInt64? = 0
+	var rowOffset: UInt64? = 0
 }
 
 

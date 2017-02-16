@@ -15,8 +15,8 @@ class UTF8CodepointIterator<InputIterator: IteratorProtocol>: Sequence, Iterator
 	
 	private var inputIterator: InputIterator
 	private var returnedByte: UInt8?
-	private var totalScalars = 0
-	private var scalarOffset = 0
+	private var totalScalars: UInt64 = 0
+	private var scalarOffset: UInt64 = 0
 	
 	
 	init(inputIterator: InputIterator) {

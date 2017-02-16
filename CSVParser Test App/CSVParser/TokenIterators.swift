@@ -8,9 +8,11 @@
 
 import Foundation
 
-class TokenIterator<InputIterator: IteratorProtocol>: Sequence, IteratorProtocol, WarningProducer where InputIterator.Element == UnicodeScalar {
+class TokenIterator<InputIterator: IteratorProtocol>: Sequence, IteratorProtocol, WarningProducer, PositionRetriever where InputIterator.Element == UnicodeScalar {
+	
 	private var inputIterator: InputIterator
 	private var config: CSVConfig
+	private var tokenOffset: UInt64 = 0
 	
 	init(inputIterator: InputIterator, config: CSVConfig) {
 		self.inputIterator = inputIterator
@@ -35,6 +37,8 @@ class TokenIterator<InputIterator: IteratorProtocol>: Sequence, IteratorProtocol
 			type = .character
 		}
 		
+		tokenOffset += 1
+		
 		let token = CSVToken(type: type, content: String(char))
 		return token
 	}
@@ -42,6 +46,15 @@ class TokenIterator<InputIterator: IteratorProtocol>: Sequence, IteratorProtocol
 	func nextWarning() -> CSVWarning? {
 		if var warningProducer = inputIterator as? WarningProducer {
 			return warningProducer.nextWarning()
+		}
+		return nil
+	}
+	
+	func currentPosition() -> CurrentPosition? {
+		if let positionRetriever = inputIterator as? PositionRetriever {
+			var currPos = positionRetriever.currentPosition()
+			currPos?.tokenOffset = tokenOffset
+			return currPos
 		}
 		return nil
 	}

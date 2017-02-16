@@ -164,4 +164,3 @@ extension ImportController: NSTableViewDataSource {
 		return rowData[col]
 	}
 }
-

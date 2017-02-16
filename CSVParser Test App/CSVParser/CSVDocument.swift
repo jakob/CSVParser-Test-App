@@ -38,7 +38,7 @@ class CSVDocument: Sequence {
 	
 	
 	func makeIterator() -> IteratorWithWarnings<[String]> {
-		return ConcreteIteratorWithWarnings(SimpleParser(parser: makeCSVValueIterator()))
+		return ConcreteIteratorWithWarnings(SimpleParser(inputIterator: makeCSVValueIterator()))
 	}
 	
 	func makeCSVValueIterator() -> IteratorWithWarnings<[CSVValue]> {
