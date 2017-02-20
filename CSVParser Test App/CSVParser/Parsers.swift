@@ -9,9 +9,11 @@
 import Foundation
 
 class CSVParser<InputIterator: IteratorProtocol>: Sequence, IteratorProtocol, WarningProducer, PositionRetriever where InputIterator.Element == CSVToken {
+	internal var warnings = [CSVWarning]()
 	private var inputIterator: InputIterator
 	private var config: CSVConfig
-	var warnings = [CSVWarning]()
+	private var rowOffset: Int = 0
+	private var lineOffset: Int = 0
 	
 	init(inputIterator: InputIterator, config: CSVConfig) {
 		self.inputIterator = inputIterator
@@ -28,6 +30,7 @@ class CSVParser<InputIterator: IteratorProtocol>: Sequence, IteratorProtocol, Wa
 			let val = CSVValue(currValue, quoted: quoted)
 			values.append(val)
 			currValue = ""
+			rowOffset += 1
 		}
 		func appendWarning(_ text: String) {
 			let warning = CSVWarning(text: text)
@@ -75,7 +78,7 @@ class CSVParser<InputIterator: IteratorProtocol>: Sequence, IteratorProtocol, Wa
 				mode = .beforeQuote
 				
 			case (.beforeQuote, .quote):
-				if !currValue.isEmpty { appendWarning("") }
+				if !currValue.isEmpty { appendWarning("Unexpected quote while value is empty") }
 				mode = .insideQuote
 				
 			case (_, .lineSeparator), (_, .endOfFile):
@@ -97,18 +100,22 @@ class CSVParser<InputIterator: IteratorProtocol>: Sequence, IteratorProtocol, Wa
 		return warnings.isEmpty ? nil : warnings.removeFirst()
 	}
 	
-	func currentPosition() -> CurrentPosition? {
+	func currentPosition() -> CurrentPosition {
+		var currPos: CurrentPosition
 		if let positionRetriever = inputIterator as? PositionRetriever {
-			let currPos = positionRetriever.currentPosition()
-			
-			return currPos
+			currPos = positionRetriever.currentPosition()
+		} else {
+			currPos = CurrentPosition()
 		}
-		return nil
+		currPos.rowOffset = rowOffset
+		currPos.lineOffset = lineOffset
+		return currPos
 	}
 }
 
-class SimpleParser<InputIterator: IteratorProtocol & WarningProducer> : Sequence, IteratorProtocol, WarningProducer, PositionRetriever where InputIterator.Element == [CSVValue] {
+class SimpleParser<InputIterator: IteratorProtocol>: Sequence, IteratorProtocol, WarningProducer, PositionRetriever where InputIterator.Element == [CSVValue] {
 	var inputIterator: InputIterator
+	private var lineOffset: Int = 0
 	
 	init(inputIterator: InputIterator) {
 		self.inputIterator = inputIterator
@@ -116,19 +123,25 @@ class SimpleParser<InputIterator: IteratorProtocol & WarningProducer> : Sequence
 	
 	func next() -> [String]? {
 		guard let values = inputIterator.next() else { return nil }
+		lineOffset += 1
 		return values.map { $0.value ?? "" }
 	}
 	
 	func nextWarning() -> CSVWarning? {
-		return inputIterator.nextWarning()
-	}
-	
-	func currentPosition() -> CurrentPosition? {
-		if let positionRetriever = inputIterator as? PositionRetriever {
-			let currPos = positionRetriever.currentPosition()
-			
-			return currPos
+		if var warningProducer = inputIterator as? WarningProducer {
+			return warningProducer.nextWarning()
 		}
 		return nil
+	}
+	
+	func currentPosition() -> CurrentPosition {
+		var currPos: CurrentPosition
+		if let positionRetriever = inputIterator as? PositionRetriever {
+			currPos = positionRetriever.currentPosition()
+		} else {
+			currPos = CurrentPosition()
+		}
+		currPos.lineOffset = lineOffset
+		return currPos
 	}
 }

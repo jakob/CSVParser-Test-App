@@ -77,8 +77,8 @@
 		834FDA5C1E532D8100CC4A91 /* CSVParser */ = {
 			isa = PBXGroup;
 			children = (
-				834FDA5F1E532D8100CC4A91 /* CSVDocument.swift */,
 				834FDA601E532D8100CC4A91 /* DataTypes.swift */,
+				834FDA5F1E532D8100CC4A91 /* CSVDocument.swift */,
 				835954231E49D85000D1F0DF /* Parsers.swift */,
 				834FDA611E532D8100CC4A91 /* TokenIterators.swift */,
 				834FDA5E1E532D8100CC4A91 /* CodepointIterators.swift */,

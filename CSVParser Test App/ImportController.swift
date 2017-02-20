@@ -83,6 +83,7 @@ class ImportController: NSObject {
 		Bundle.main.loadNibNamed("ImportWindow", owner: self, topLevelObjects: nil)
 		settingsWindow?.makeKeyAndOrderFront(nil)
 		
+		/*
 		let openPanel = NSOpenPanel()
 		openPanel.canChooseFiles = true
 		openPanel.canChooseDirectories = false
@@ -93,6 +94,10 @@ class ImportController: NSObject {
 			fileURL = openPanel.urls.first!
 			importFile()
 		}
+		*/
+		
+		fileURL = URL(fileURLWithPath: "/Users/chris/Documents/gemeinden_at.csv")
+		importFile()
 		
 		// remove self from activeImportControllers
 	}
@@ -116,6 +121,8 @@ class ImportController: NSObject {
 		
 		while let elem = iterator.next() {
 			while let warning = iterator.nextWarning() { print("WARNING: \(warning.text)") }
+			
+			print(iterator.currentPosition())
 			
 			if firstRowAsHeader && nRows == 0 {
 				headerData.append(contentsOf: elem)

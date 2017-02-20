@@ -10,18 +10,17 @@ import Foundation
 
 class FileByteIterator: Sequence, IteratorProtocol, WarningProducer, PositionRetriever {
 	internal var warnings = [CSVWarning]()
-	
 	private let fileURL: URL
 	private var fileHandle: FileHandle?
-	private var byteOffset: UInt64 = 0
-	private var totalBytes: UInt64 = 0
+	private var totalBytes: Int = 0
+	private var byteOffset: Int = 0
 	
 	init(fileURL: URL) {
 		self.fileURL = fileURL
 		
 		do {
 			let attributes = try FileManager.default.attributesOfItem(atPath: fileURL.path)
-			if let fileSize = (attributes[FileAttributeKey.size] as? NSNumber)?.uint64Value {
+			if let fileSize = attributes[FileAttributeKey.size] as? Int {
 				totalBytes = fileSize
 			}
 		} catch {
@@ -47,6 +46,7 @@ class FileByteIterator: Sequence, IteratorProtocol, WarningProducer, PositionRet
 		
 		var byte: UInt8 = 0
 		data.copyBytes(to: &byte, count: MemoryLayout<UInt8>.size)
+		byteOffset += 1
 		return byte
 	}
 	
@@ -54,7 +54,7 @@ class FileByteIterator: Sequence, IteratorProtocol, WarningProducer, PositionRet
 		return warnings.isEmpty ? nil : warnings.removeFirst()
 	}
 	
-	func currentPosition() -> CurrentPosition? {
+	func currentPosition() -> CurrentPosition {
 		var currPos = CurrentPosition()
 		currPos.totalBytes = totalBytes
 		currPos.byteOffset = byteOffset
@@ -62,20 +62,29 @@ class FileByteIterator: Sequence, IteratorProtocol, WarningProducer, PositionRet
 	}
 }
 
-class DataByteIterator: Sequence, IteratorProtocol {
+class DataByteIterator: Sequence, IteratorProtocol, PositionRetriever {
 	private let data: Data
-	private var index: Int = 0
+	private var totalBytes: Int
+	private var byteOffset: Int = 0
 	
 	init(data: Data) {
 		self.data = data
+		self.totalBytes = data.count
 	}
 	
 	func next() -> UInt8? {
-		if index < data.count {
-			let byte = data[index]
-			index += 1
+		if byteOffset < totalBytes {
+			let byte = data[byteOffset]
+			byteOffset += 1
 			return byte
 		}
 		return nil
+	}
+	
+	func currentPosition() -> CurrentPosition {
+		var currPos = CurrentPosition()
+		currPos.totalBytes = totalBytes
+		currPos.byteOffset = byteOffset
+		return currPos
 	}
 }

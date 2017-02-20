@@ -9,10 +9,9 @@
 import Foundation
 
 class TokenIterator<InputIterator: IteratorProtocol>: Sequence, IteratorProtocol, WarningProducer, PositionRetriever where InputIterator.Element == UnicodeScalar {
-	
 	private var inputIterator: InputIterator
 	private var config: CSVConfig
-	private var tokenOffset: UInt64 = 0
+	private var tokenOffset: Int = 0
 	
 	init(inputIterator: InputIterator, config: CSVConfig) {
 		self.inputIterator = inputIterator
@@ -50,12 +49,14 @@ class TokenIterator<InputIterator: IteratorProtocol>: Sequence, IteratorProtocol
 		return nil
 	}
 	
-	func currentPosition() -> CurrentPosition? {
+	func currentPosition() -> CurrentPosition {
+		var currPos: CurrentPosition
 		if let positionRetriever = inputIterator as? PositionRetriever {
-			var currPos = positionRetriever.currentPosition()
-			currPos?.tokenOffset = tokenOffset
-			return currPos
+			currPos = positionRetriever.currentPosition()
+		} else {
+			currPos = CurrentPosition()
 		}
-		return nil
+		currPos.tokenOffset = tokenOffset
+		return currPos
 	}
 }

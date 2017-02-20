@@ -13,7 +13,6 @@ class CSVDocument: Sequence {
 	private let sourceData: Data?
 	private let sourceString: String?
 	private let config: CSVConfig
-	var warnings = [CSVWarning]()
 	
 	init(fileURL: URL, config: CSVConfig = CSVConfig()) {
 		self.fileURL = fileURL
@@ -36,7 +35,6 @@ class CSVDocument: Sequence {
 		self.config = config
 	}
 	
-	
 	func makeIterator() -> IteratorWithWarnings<[String]> {
 		return ConcreteIteratorWithWarnings(SimpleParser(inputIterator: makeCSVValueIterator()))
 	}
@@ -46,23 +44,19 @@ class CSVDocument: Sequence {
 		
 		if let str = sourceString {
 			codepointIterator = ConcreteIteratorWithWarnings(str.unicodeScalars.makeIterator())
-		}
-		else {
+		} else {
 			let byteIterator: IteratorWithWarnings<UInt8>
 			if let url = fileURL {
 				byteIterator = ConcreteIteratorWithWarnings(FileByteIterator(fileURL: url))
-			}
-			else if let data = sourceData {
+			} else if let data = sourceData {
 				byteIterator = ConcreteIteratorWithWarnings(DataByteIterator(data: data))
-			}
-			else {
+			} else {
 				fatalError("This should be unreachable")
 			}
 			
 			if config.encoding == .utf8 {
 				codepointIterator = ConcreteIteratorWithWarnings(UTF8CodepointIterator(inputIterator: byteIterator))
-			}
-			else {
+			} else {
 				fatalError("Unsupported Character Encoding")
 			}
 		}

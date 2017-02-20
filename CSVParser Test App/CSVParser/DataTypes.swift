@@ -53,14 +53,21 @@ enum CSVParsingMode {
 	case afterQuote
 }
 
-struct CurrentPosition {
-	var totalBytes: UInt64? = 0
-	var totalScalars: UInt64? = 0
-	var byteOffset: UInt64? = 0
-	var scalarOffset: UInt64? = 0
-	var tokenOffset: UInt64? = 0
-	var lineOffset: UInt64? = 0
-	var rowOffset: UInt64? = 0
+struct CurrentPosition: CustomStringConvertible {
+	var totalBytes: Int?
+	var byteOffset: Int?
+	var totalScalars: Int?
+	var scalarOffset: Int?
+	var tokenOffset: Int?
+	var rowOffset: Int?
+	var lineOffset: Int?
+	var progress: Double? {
+		guard let totalBytes = totalBytes, let byteOffset = byteOffset else { return nil }
+		return Double(byteOffset) / Double(totalBytes)
+	}
+	var description: String {
+		return "totalBytes=\(totalBytes), byteOffset=\(byteOffset), totalScalars=\(totalScalars), scalarOffset=\(scalarOffset), tokenOffset=\(tokenOffset), rowOffset=\(rowOffset), lineOffset=\(lineOffset), progress=\(progress)"
+	}
 }
 
 
@@ -70,11 +77,11 @@ protocol WarningProducer {
 }
 
 protocol PositionRetriever {
-	func currentPosition() -> CurrentPosition?
+	func currentPosition() -> CurrentPosition
 }
 
 class IteratorWithWarnings<Element>: IteratorProtocol, WarningProducer, PositionRetriever {
-	var warnings = [CSVWarning]()
+	internal var warnings = [CSVWarning]()
 	
 	func next() -> Element? {
 		fatalError("This method is abstract")
@@ -84,7 +91,7 @@ class IteratorWithWarnings<Element>: IteratorProtocol, WarningProducer, Position
 		fatalError("This method is abstract")
 	}
 	
-	func currentPosition() -> CurrentPosition? {
+	func currentPosition() -> CurrentPosition {
 		fatalError("This method is abstract")
 	}
 }
@@ -107,10 +114,10 @@ class ConcreteIteratorWithWarnings<I: IteratorProtocol>: IteratorWithWarnings<I.
 		return nil
 	}
 	
-	override func currentPosition() -> CurrentPosition? {
+	override func currentPosition() -> CurrentPosition {
 		if let positionRetriever = iterator as? PositionRetriever {
 			return positionRetriever.currentPosition()
 		}
-		return nil
+		return CurrentPosition()
 	}
 }

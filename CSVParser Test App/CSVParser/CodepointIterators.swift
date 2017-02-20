@@ -12,12 +12,10 @@ let ItemReplacementChar = UnicodeScalar(0xFFFD)
 
 class UTF8CodepointIterator<InputIterator: IteratorProtocol>: Sequence, IteratorProtocol, WarningProducer, PositionRetriever where InputIterator.Element == UInt8 {
 	internal var warnings = [CSVWarning]()
-	
 	private var inputIterator: InputIterator
 	private var returnedByte: UInt8?
-	private var totalScalars: UInt64 = 0
-	private var scalarOffset: UInt64 = 0
-	
+	private var totalScalars: Int?
+	private var scalarOffset: Int = 0
 	
 	init(inputIterator: InputIterator) {
 		self.inputIterator = inputIterator
@@ -49,15 +47,13 @@ class UTF8CodepointIterator<InputIterator: IteratorProtocol>: Sequence, Iterator
 		func appendWarning(_ text: String) {
 			let warning = CSVWarning(text: text)
 			warnings.append(warning)
-			print("WARNING APPENDED")
 		}
 		
-		guard let byte = nextByte() else {
-			return nil
-		}
+		guard let byte = nextByte() else { return nil }
 		
 		// single byte
 		if (byte & 0b1000_0000) == 0 {
+			scalarOffset += 1
 			return UnicodeScalar(byte)
 		}
 		
@@ -81,6 +77,7 @@ class UTF8CodepointIterator<InputIterator: IteratorProtocol>: Sequence, Iterator
 			}
 			
 			let res = UInt32(b & 0b111111) + (UInt32(a & 0b11111) << 6)
+			scalarOffset += 1
 			return UnicodeScalar(res)
 		}
 		
@@ -108,6 +105,7 @@ class UTF8CodepointIterator<InputIterator: IteratorProtocol>: Sequence, Iterator
 			}
 			
 			let res = UInt32(c & 0b111111) + (UInt32(b & 0b111111) << 6) + (UInt32(a & 0b1111) << 12)
+			scalarOffset += 1
 			return UnicodeScalar(res)
 		}
 		
@@ -144,6 +142,7 @@ class UTF8CodepointIterator<InputIterator: IteratorProtocol>: Sequence, Iterator
 			}
 			
 			let res = UInt32(d & 0b111111) + (UInt32(c & 0b111111) << 6) + (UInt32(b & 0b111111) << 12) + (UInt32(a & 0b1111) << 18)
+			scalarOffset += 1
 			return UnicodeScalar(res)
 			
 		}
@@ -159,13 +158,15 @@ class UTF8CodepointIterator<InputIterator: IteratorProtocol>: Sequence, Iterator
 		return warnings.isEmpty ? nil : warnings.removeFirst()
 	}
 	
-	func currentPosition() -> CurrentPosition? {
+	func currentPosition() -> CurrentPosition {
+		var currPos: CurrentPosition
 		if let positionRetriever = inputIterator as? PositionRetriever {
-			var currPos = positionRetriever.currentPosition()
-			currPos?.totalScalars = totalScalars
-			currPos?.scalarOffset = scalarOffset
-			return currPos
+			currPos = positionRetriever.currentPosition()
+		} else {
+			currPos = CurrentPosition()
 		}
-		return nil
+		currPos.totalScalars = totalScalars
+		currPos.scalarOffset = scalarOffset
+		return currPos
 	}
 }
