@@ -102,7 +102,7 @@ class CSVParser_Test_AppTests: XCTestCase {
 		let testData = testString.data(using: .isoLatin1)!
 		
 		let byteIterator = DataByteIterator(data: testData)
-		let codepointIterator = UTF8CodepointIterator(inputIterator: byteIterator)
+        let codepointIterator = Latin1CodepointIterator(inputIterator: byteIterator)
 		
 		let expected = ["a","ä","u"]
 		
