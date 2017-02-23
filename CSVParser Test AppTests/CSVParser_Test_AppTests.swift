@@ -33,9 +33,7 @@ class CSVParser_Test_AppTests: XCTestCase {
 		
 		var idx = 0
 		while let elem = iterator.next() {
-			while let warning = iterator.nextWarning() {
-				print("WARNING: \(warning.text)")
-			}
+			XCTAssertNil(iterator.nextWarning())
 			XCTAssertLessThan(idx, expected.count, "Received more lines than expected")
 			XCTAssertEqual(elem.count, expected[idx].count, "Line \(idx) does not have expected length")
 			XCTAssertEqual(elem, expected[idx], "Line \(idx) is not equal")
@@ -43,10 +41,7 @@ class CSVParser_Test_AppTests: XCTestCase {
 		}
 		
 		XCTAssertEqual(idx, expected.count, "Did not receive expected number of lines")
-		
-		while let warning = iterator.nextWarning() {
-			print("WARNING: \(warning.text)")
-		}
+		XCTAssertNil(iterator.nextWarning())
 	}
 	
 	func testData() {
@@ -62,9 +57,7 @@ class CSVParser_Test_AppTests: XCTestCase {
 		
 		var idx = 0
 		while let elem = iterator.next() {
-			while let warning = iterator.nextWarning() {
-				print("WARNING: \(warning.text)")
-			}
+			XCTAssertNil(iterator.nextWarning())
 			XCTAssertLessThan(idx, expected.count, "Received more lines than expected")
 			XCTAssertEqual(elem.count, expected[idx].count, "Line \(idx) does not have expected length")
 			XCTAssertEqual(elem, expected[idx], "Line \(idx) is not equal")
@@ -72,10 +65,7 @@ class CSVParser_Test_AppTests: XCTestCase {
 		}
 		
 		XCTAssertEqual(idx, expected.count, "Did not receive expected number of lines")
-		
-		while let warning = iterator.nextWarning() {
-			print("WARNING: \(warning.text)")
-		}
+		XCTAssertNil(iterator.nextWarning())
 	}
 	
 	func testUTF8() {
@@ -88,13 +78,12 @@ class CSVParser_Test_AppTests: XCTestCase {
 		
 		var i = 0
 		while let char = codepointIterator.next(), expected.indices.contains(i) {
-			while let warning = codepointIterator.nextWarning() {
-				print("WARNING: \(warning.text)")
-			}
-			
+			XCTAssertNil(codepointIterator.nextWarning())
 			XCTAssertEqual(String(char), expected[i], "Character \(i) is not equal")
 			i += 1
 		}
+		
+		XCTAssertNil(codepointIterator.nextWarning())
 	}
 	
 	func testBlankLines() {
@@ -113,9 +102,7 @@ class CSVParser_Test_AppTests: XCTestCase {
 		
 		var idx = 0
 		while let elem = iterator.next() {
-			while let warning = iterator.nextWarning() {
-				print("WARNING: \(warning.text)")
-			}
+			XCTAssertNil(iterator.nextWarning())
 			XCTAssertLessThan(idx, expected.count, "Received more lines than expected")
 			XCTAssertEqual(elem.count, expected[idx].count, "Line \(idx) does not have expected length")
 			XCTAssertEqual(elem, expected[idx], "Line \(idx) is not equal")
@@ -123,10 +110,7 @@ class CSVParser_Test_AppTests: XCTestCase {
 		}
 		
 		XCTAssertEqual(idx, expected.count, "Did not receive expected number of lines")
-		
-		while let warning = iterator.nextWarning() {
-			print("WARNING: \(warning.text)")
-		}
+		XCTAssertNil(iterator.nextWarning())
 	}
 	
 	func testCommaSeparated() {
@@ -142,9 +126,7 @@ class CSVParser_Test_AppTests: XCTestCase {
 		
 		var idx = 0
 		while let elem = iterator.next() {
-			while let warning = iterator.nextWarning() {
-				print("WARNING: \(warning.text)")
-			}
+			XCTAssertNil(iterator.nextWarning())
 			XCTAssertLessThan(idx, expected.count, "Received more lines than expected")
 			XCTAssertEqual(elem.count, expected[idx].count, "Line \(idx) does not have expected length")
 			XCTAssertEqual(elem, expected[idx], "Line \(idx) is not equal")
@@ -152,10 +134,7 @@ class CSVParser_Test_AppTests: XCTestCase {
 		}
 		
 		XCTAssertEqual(idx, expected.count, "Did not receive expected number of lines")
-		
-		while let warning = iterator.nextWarning() {
-			print("WARNING: \(warning.text)")
-		}
+		XCTAssertNil(iterator.nextWarning())
 	}
 	
 	func testCommaSeparatedQuote() {
@@ -171,9 +150,7 @@ class CSVParser_Test_AppTests: XCTestCase {
 		
 		var idx = 0
 		while let elem = iterator.next() {
-			while let warning = iterator.nextWarning() {
-				print("WARNING: \(warning.text)")
-			}
+			XCTAssertNil(iterator.nextWarning())
 			XCTAssertLessThan(idx, expected.count, "Received more lines than expected")
 			XCTAssertEqual(elem.count, expected[idx].count, "Line \(idx) does not have expected length")
 			XCTAssertEqual(elem, expected[idx], "Line \(idx) is not equal")
@@ -181,10 +158,7 @@ class CSVParser_Test_AppTests: XCTestCase {
 		}
 		
 		XCTAssertEqual(idx, expected.count, "Did not receive expected number of lines")
-		
-		while let warning = iterator.nextWarning() {
-			print("WARNING: \(warning.text)")
-		}
+		XCTAssertNil(iterator.nextWarning())
 	}
 	
 	
@@ -205,19 +179,14 @@ class CSVParser_Test_AppTests: XCTestCase {
 		
 		var idx = 0
 		while let elem = iterator.next() {
-			while let warning = iterator.nextWarning() {
-				print("WARNING: \(warning.text)")
-			}
+			XCTAssertNil(iterator.nextWarning())
 			XCTAssertEqual(elem.count, expected[idx].count, "Line \(idx) does not have expected length")
 			XCTAssertEqual(elem, expected[idx], "Line \(idx) is not equal")
 			idx += 1
 		}
 		
 		XCTAssertEqual(idx, expected.count, "Did not receive expected number of lines")
-		
-		while let warning = iterator.nextWarning() {
-			print("WARNING: \(warning.text)")
-		}
+		XCTAssertNil(iterator.nextWarning())
 	}
 	
 	func testInvalidEncoding() {
@@ -231,19 +200,14 @@ class CSVParser_Test_AppTests: XCTestCase {
 		
 		var idx = 0
 		while let elem = iterator.next() {
-			while let warning = iterator.nextWarning() {
-				print("WARNING: \(warning.text)")
-			}
+			XCTAssertNil(iterator.nextWarning())
 			XCTAssertEqual(elem.count, expected[idx].count, "Line \(idx) does not have expected length")
 			XCTAssertEqual(elem, expected[idx], "Line \(idx) is not equal")
 			idx += 1
 		}
 		
 		XCTAssertEqual(idx, expected.count, "Did not receive expected number of lines")
-		
-		while let warning = iterator.nextWarning() {
-			print("WARNING: \(warning.text)")
-		}
+		XCTAssertNil(iterator.nextWarning())
 	}
 	
 	func testMissingBackslashAfterValue() {
@@ -257,19 +221,14 @@ class CSVParser_Test_AppTests: XCTestCase {
 		
 		var idx = 0
 		while let elem = iterator.next() {
-			while let warning = iterator.nextWarning() {
-				print("WARNING: \(warning.text)")
-			}
+			XCTAssertNil(iterator.nextWarning())
 			XCTAssertEqual(elem.count, expected[idx].count, "Line \(idx) does not have expected length")
 			XCTAssertEqual(elem, expected[idx], "Line \(idx) is not equal")
 			idx += 1
 		}
 		
 		XCTAssertEqual(idx, expected.count, "Did not receive expected number of lines")
-		
-		while let warning = iterator.nextWarning() {
-			print("WARNING: \(warning.text)")
-		}
+		XCTAssertNil(iterator.nextWarning())
 	}
 	
 	func testMissingBackslashBeforeValue() {
@@ -283,19 +242,14 @@ class CSVParser_Test_AppTests: XCTestCase {
 		
 		var idx = 0
 		while let elem = iterator.next() {
-			while let warning = iterator.nextWarning() {
-				print("WARNING: \(warning.text)")
-			}
+			XCTAssertNil(iterator.nextWarning())
 			XCTAssertEqual(elem.count, expected[idx].count, "Line \(idx) does not have expected length")
 			XCTAssertEqual(elem, expected[idx], "Line \(idx) is not equal")
 			idx += 1
 		}
 		
 		XCTAssertEqual(idx, expected.count, "Did not receive expected number of lines")
-		
-		while let warning = iterator.nextWarning() {
-			print("WARNING: \(warning.text)")
-		}
+		XCTAssertNil(iterator.nextWarning())
 	}
 	
 	func testMissingQuoteAtEnd() {
@@ -309,19 +263,14 @@ class CSVParser_Test_AppTests: XCTestCase {
 		
 		var idx = 0
 		while let elem = iterator.next() {
-			while let warning = iterator.nextWarning() {
-				print("WARNING: \(warning.text)")
-			}
+			XCTAssertNil(iterator.nextWarning())
 			XCTAssertEqual(elem.count, expected[idx].count, "Line \(idx) does not have expected length")
 			XCTAssertEqual(elem, expected[idx], "Line \(idx) is not equal")
 			idx += 1
 		}
 		
 		XCTAssertEqual(idx, expected.count, "Did not receive expected number of lines")
-		
-		while let warning = iterator.nextWarning() {
-			print("WARNING: \(warning.text)")
-		}
+		XCTAssertNil(iterator.nextWarning())
 	}
 	
 	func testMissingValueForBackslashInQuote() {
@@ -335,19 +284,14 @@ class CSVParser_Test_AppTests: XCTestCase {
 		
 		var idx = 0
 		while let elem = iterator.next() {
-			while let warning = iterator.nextWarning() {
-				print("WARNING: \(warning.text)")
-			}
+			XCTAssertNil(iterator.nextWarning())
 			XCTAssertEqual(elem.count, expected[idx].count, "Line \(idx) does not have expected length")
 			XCTAssertEqual(elem, expected[idx], "Line \(idx) is not equal")
 			idx += 1
 		}
 		
 		XCTAssertEqual(idx, expected.count, "Did not receive expected number of lines")
-		
-		while let warning = iterator.nextWarning() {
-			print("WARNING: \(warning.text)")
-		}
+		XCTAssertNil(iterator.nextWarning())
 	}
 	
 	func testMissingValueForBackslash() {
@@ -361,19 +305,14 @@ class CSVParser_Test_AppTests: XCTestCase {
 		
 		var idx = 0
 		while let elem = iterator.next() {
-			while let warning = iterator.nextWarning() {
-				print("WARNING: \(warning.text)")
-			}
+			XCTAssertNil(iterator.nextWarning())
 			XCTAssertEqual(elem.count, expected[idx].count, "Line \(idx) does not have expected length")
 			XCTAssertEqual(elem, expected[idx], "Line \(idx) is not equal")
 			idx += 1
 		}
 		
 		XCTAssertEqual(idx, expected.count, "Did not receive expected number of lines")
-		
-		while let warning = iterator.nextWarning() {
-			print("WARNING: \(warning.text)")
-		}
+		XCTAssertNil(iterator.nextWarning())
 	}
 	
 	func testQuoteBackslashEscape() {
@@ -390,19 +329,14 @@ class CSVParser_Test_AppTests: XCTestCase {
 		
 		var idx = 0
 		while let elem = iterator.next() {
-			while let warning = iterator.nextWarning() {
-				print("WARNING: \(warning.text)")
-			}
+			XCTAssertNil(iterator.nextWarning())
 			XCTAssertEqual(elem.count, expected[idx].count, "Line \(idx) does not have expected length")
 			XCTAssertEqual(elem, expected[idx], "Line \(idx) is not equal")
 			idx += 1
 		}
 		
 		XCTAssertEqual(idx, expected.count, "Did not receive expected number of lines")
-		
-		while let warning = iterator.nextWarning() {
-			print("WARNING: \(warning.text)")
-		}
+		XCTAssertNil(iterator.nextWarning())
 	}
 	
 	func testQuoteInUnquotedValue() {
@@ -418,19 +352,14 @@ class CSVParser_Test_AppTests: XCTestCase {
 		
 		var idx = 0
 		while let elem = iterator.next() {
-			while let warning = iterator.nextWarning() {
-				print("WARNING: \(warning.text)")
-			}
+			XCTAssertNil(iterator.nextWarning())
 			XCTAssertEqual(elem.count, expected[idx].count, "Line \(idx) does not have expected length")
 			XCTAssertEqual(elem, expected[idx], "Line \(idx) is not equal")
 			idx += 1
 		}
 		
 		XCTAssertEqual(idx, expected.count, "Did not receive expected number of lines")
-		
-		while let warning = iterator.nextWarning() {
-			print("WARNING: \(warning.text)")
-		}
+		XCTAssertNil(iterator.nextWarning())
 	}
 	
 	func testQuoteQuoteEscape() {
@@ -447,19 +376,14 @@ class CSVParser_Test_AppTests: XCTestCase {
 		
 		var idx = 0
 		while let elem = iterator.next() {
-			while let warning = iterator.nextWarning() {
-				print("WARNING: \(warning.text)")
-			}
+			XCTAssertNil(iterator.nextWarning())
 			XCTAssertEqual(elem.count, expected[idx].count, "Line \(idx) does not have expected length")
 			XCTAssertEqual(elem, expected[idx], "Line \(idx) is not equal")
 			idx += 1
 		}
 		
 		XCTAssertEqual(idx, expected.count, "Did not receive expected number of lines")
-		
-		while let warning = iterator.nextWarning() {
-			print("WARNING: \(warning.text)")
-		}
+		XCTAssertNil(iterator.nextWarning())
 	}
 	
 	func testSemicolonSeparated() {
@@ -477,19 +401,14 @@ class CSVParser_Test_AppTests: XCTestCase {
 		
 		var idx = 0
 		while let elem = iterator.next() {
-			while let warning = iterator.nextWarning() {
-				print("WARNING: \(warning.text)")
-			}
+			XCTAssertNil(iterator.nextWarning())
 			XCTAssertEqual(elem.count, expected[idx].count, "Line \(idx) does not have expected length")
 			XCTAssertEqual(elem, expected[idx], "Line \(idx) is not equal")
 			idx += 1
 		}
 		
 		XCTAssertEqual(idx, expected.count, "Did not receive expected number of lines")
-		
-		while let warning = iterator.nextWarning() {
-			print("WARNING: \(warning.text)")
-		}
+		XCTAssertNil(iterator.nextWarning())
 	}
 	
 	func testTooManyQuotesAtEnd() {
@@ -505,18 +424,25 @@ class CSVParser_Test_AppTests: XCTestCase {
 		
 		var idx = 0
 		while let elem = iterator.next() {
-			while let warning = iterator.nextWarning() {
-				print("WARNING: \(warning.text)")
-			}
+			XCTAssertNil(iterator.nextWarning())
 			XCTAssertEqual(elem.count, expected[idx].count, "Line \(idx) does not have expected length")
 			XCTAssertEqual(elem, expected[idx], "Line \(idx) is not equal")
 			idx += 1
 		}
 		
 		XCTAssertEqual(idx, expected.count, "Did not receive expected number of lines")
-		
-		while let warning = iterator.nextWarning() {
-			print("WARNING: \(warning.text)")
+		XCTAssertNil(iterator.nextWarning())
+	}
+	
+	func testPerformance() {
+		self.measure {
+			let fileURL = Bundle(for: type(of: self)).url(forResource: "Reading Test Documents/semi-big-file", withExtension: "csv")!
+			let csvDoc = CSVDocument(fileURL: fileURL)
+			let iterator = csvDoc.makeIterator()
+			
+			while let _ = iterator.next() {}
+			
+			XCTAssertNil(iterator.nextWarning())
 		}
 	}
 }
