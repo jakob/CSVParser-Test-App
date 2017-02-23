@@ -9,14 +9,21 @@
 import Cocoa
 
 class ImportController: NSObject {
-	
 	private static var activeImportControllers = [ImportController]()
+	
+	@IBOutlet var importWindow: NSWindow?
+	@IBOutlet var delimiterSegControl: NSSegmentedControl?
+	@IBOutlet var decimalSegControl: NSSegmentedControl?
+	@IBOutlet var quoteSegControl: NSSegmentedControl?
+	@IBOutlet var encodingPopupButton: NSPopUpButton?
+	@IBOutlet var firstRowAsHeaderCheckbox: NSButton?
+	@IBOutlet var tableView: NSTableView?
+	
+	private var progressWindowController: ProgressWindowController?
 	
 	fileprivate var tableData = [[String]]()
 	private var headerData = [String]()
-	
 	private var fileURL: URL?
-	
 	private var delimiterCharacter: Character {
 		var char: String
 		let selIdx = delimiterSegControl?.selectedSegment ?? 0
@@ -61,48 +68,22 @@ class ImportController: NSObject {
 		guard let checkbox = firstRowAsHeaderCheckbox else { return false }
 		return checkbox.state == NSOnState
 	}
-	private var importNumRows = 10
-	
-	@IBOutlet var settingsWindow: NSWindow?
-	@IBOutlet var delimiterSegControl: NSSegmentedControl?
-	@IBOutlet var decimalSegControl: NSSegmentedControl?
-	@IBOutlet var quoteSegControl: NSSegmentedControl?
-	@IBOutlet var encodingPopupButton: NSPopUpButton?
-	@IBOutlet var firstRowAsHeaderCheckbox: NSButton?
-	@IBOutlet var tableView: NSTableView?
 	
 	
-	@IBAction func configChanged(_ sender: AnyObject?) {
-		importFile()
+	init(fileURL: URL) {
+		self.fileURL = fileURL
 	}
 	
-	
-	func startImport() {
+	func loadWindow() {
 		ImportController.activeImportControllers.append(self)
 		
 		Bundle.main.loadNibNamed("ImportWindow", owner: self, topLevelObjects: nil)
-		settingsWindow?.makeKeyAndOrderFront(nil)
-		
-		/*
-		let openPanel = NSOpenPanel()
-		openPanel.canChooseFiles = true
-		openPanel.canChooseDirectories = false
-		openPanel.allowsMultipleSelection = false
-		openPanel.allowedFileTypes = ["csv"]
-		
-		if openPanel.runModal() == NSFileHandlingPanelOKButton {
-			fileURL = openPanel.urls.first!
-			importFile()
-		}
-		*/
-		
-		fileURL = URL(fileURLWithPath: "/Users/chris/Documents/gemeinden_at.csv")
-		importFile()
+		importWindow?.makeKeyAndOrderFront(nil)
 		
 		// remove self from activeImportControllers
 	}
 	
-	func importFile() {
+	func previewImport(importRows: Int = 10) {
 		var config = CSVConfig()
 		config.delimiterCharacter = delimiterCharacter
 		config.decimalCharacter = decimalCharacter
@@ -113,8 +94,8 @@ class ImportController: NSObject {
 		
 		let csvDoc = CSVDocument(fileURL: fileURL, config: config)
 		let iterator = csvDoc.makeIterator()
-		var nRows = 0
-		var nColumns = 0
+		var rowIdx = 0
+		var colIdx = 0
 		
 		tableData.removeAll()
 		headerData.removeAll()
@@ -124,19 +105,19 @@ class ImportController: NSObject {
 			
 			print(iterator.currentPosition())
 			
-			if firstRowAsHeader && nRows == 0 {
+			if firstRowAsHeader && rowIdx == 0 {
 				headerData.append(contentsOf: elem)
 			} else {
 				tableData.append(elem)
 			}
 			
-			if elem.count > nColumns {
-				nColumns = elem.count
+			if elem.count > colIdx {
+				colIdx = elem.count
 			}
 			
-			nRows += 1
+			rowIdx += 1
 			
-			if nRows >= importNumRows {
+			if rowIdx >= importRows {
 				break
 			}
 		}
@@ -145,7 +126,7 @@ class ImportController: NSObject {
 		while let col = tableView?.tableColumns.last {
 			tableView?.removeTableColumn(col)
 		}
-		for i in 0..<nColumns {
+		for i in 0..<colIdx {
 			let col = NSTableColumn(identifier: "\(i)")
 			if firstRowAsHeader && headerData.indices.contains(i) {
 				col.headerCell.title = headerData[i]
@@ -155,7 +136,69 @@ class ImportController: NSObject {
 		
 		tableView?.reloadData()
 	}
+	
+	@IBAction func configChanged(_ sender: AnyObject?) {
+		previewImport()
+	}
+	
+	@IBAction func closeImportWindow(_ sender: AnyObject?) {
+		importWindow?.close()
+		if let index = ImportController.activeImportControllers.index(of: self) {
+			ImportController.activeImportControllers.remove(at: index)
+		}
+	}
+	
+	
+	@IBAction func startImport(_ sender: AnyObject?) {
+		progressWindowController = ProgressWindowController(windowNibName: "ProgressWindow")
+		guard progressWindowController != nil else {
+			print("Error loading ProgressWindowController")
+			return
+		}
+		
+		importWindow?.beginSheet(progressWindowController!.window!, completionHandler: { (modalResponse) in })
+		
+		var config = CSVConfig()
+		config.delimiterCharacter = delimiterCharacter
+		config.decimalCharacter = decimalCharacter
+		config.quoteCharacter = quoteCharacter
+		config.encoding = encoding
+		
+		guard let fileURL = fileURL else { print("fileURL is nil"); return }
+		
+		let csvDoc = CSVDocument(fileURL: fileURL, config: config)
+		let iterator = csvDoc.makeIterator()
+		
+		DispatchQueue.global().async {
+			var lastTime = Date().timeIntervalSince1970
+			let updateInterval = 0.020
+			var shouldReport = true
+			
+			while let _ = iterator.next() {
+				
+				if self.progressWindowController!.didCancel {
+					break
+				}
+				
+				if let progress = iterator.currentPosition().progress {
+					if shouldReport && Date().timeIntervalSince1970 >= lastTime+updateInterval {
+						lastTime = Date().timeIntervalSince1970
+						shouldReport = false
+						DispatchQueue.main.async {
+							self.progressWindowController?.setProgress(progress)
+							shouldReport = true
+						}
+					}
+				}
+			}
+			DispatchQueue.main.async {
+				self.importWindow?.endSheet(self.progressWindowController!.window!)
+			}
+		}
+	}
 }
+
+
 
 extension ImportController: NSTableViewDataSource {
 	func numberOfRows(in tableView: NSTableView) -> Int {

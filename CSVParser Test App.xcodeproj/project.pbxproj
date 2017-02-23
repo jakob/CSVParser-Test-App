@@ -18,6 +18,8 @@
 		834FDA6A1E53307700CC4A91 /* ImportController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 834FDA691E53307700CC4A91 /* ImportController.swift */; };
 		834FDA6C1E5330F400CC4A91 /* ImportWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 834FDA6B1E5330F400CC4A91 /* ImportWindow.xib */; };
 		835954241E49D85000D1F0DF /* Parsers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 835954231E49D85000D1F0DF /* Parsers.swift */; };
+		83B295671E5C81A40001B0C6 /* ProgressWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83B295661E5C81A40001B0C6 /* ProgressWindowController.swift */; };
+		83B295691E5C81BA0001B0C6 /* ProgressWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 83B295681E5C81BA0001B0C6 /* ProgressWindow.xib */; };
 		83E5869B1E2D35B20058879B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83E5869A1E2D35B20058879B /* AppDelegate.swift */; };
 		83E5869F1E2D35B20058879B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 83E5869E1E2D35B20058879B /* Assets.xcassets */; };
 		83E586A21E2D35B20058879B /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 83E586A01E2D35B20058879B /* Main.storyboard */; };
@@ -46,6 +48,8 @@
 		834FDA691E53307700CC4A91 /* ImportController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImportController.swift; sourceTree = "<group>"; };
 		834FDA6B1E5330F400CC4A91 /* ImportWindow.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ImportWindow.xib; sourceTree = "<group>"; };
 		835954231E49D85000D1F0DF /* Parsers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Parsers.swift; sourceTree = "<group>"; };
+		83B295661E5C81A40001B0C6 /* ProgressWindowController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProgressWindowController.swift; sourceTree = "<group>"; };
+		83B295681E5C81BA0001B0C6 /* ProgressWindow.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ProgressWindow.xib; sourceTree = "<group>"; };
 		83E586971E2D35B20058879B /* CSVParser Test App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "CSVParser Test App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		83E5869A1E2D35B20058879B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		83E5869E1E2D35B20058879B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -112,6 +116,8 @@
 				834FDA671E532E7C00CC4A91 /* MainViewController.swift */,
 				834FDA691E53307700CC4A91 /* ImportController.swift */,
 				834FDA6B1E5330F400CC4A91 /* ImportWindow.xib */,
+				83B295661E5C81A40001B0C6 /* ProgressWindowController.swift */,
+				83B295681E5C81BA0001B0C6 /* ProgressWindow.xib */,
 				834FDA5C1E532D8100CC4A91 /* CSVParser */,
 				83E5869E1E2D35B20058879B /* Assets.xcassets */,
 				83E586A01E2D35B20058879B /* Main.storyboard */,
@@ -214,6 +220,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				83B295691E5C81BA0001B0C6 /* ProgressWindow.xib in Resources */,
 				834FDA6C1E5330F400CC4A91 /* ImportWindow.xib in Resources */,
 				83E5869F1E2D35B20058879B /* Assets.xcassets in Resources */,
 				83E586A21E2D35B20058879B /* Main.storyboard in Resources */,
@@ -236,6 +243,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				83B295671E5C81A40001B0C6 /* ProgressWindowController.swift in Sources */,
 				834FDA661E532D8100CC4A91 /* TokenIterators.swift in Sources */,
 				834FDA621E532D8100CC4A91 /* ByteIterators.swift in Sources */,
 				834FDA6A1E53307700CC4A91 /* ImportController.swift in Sources */,

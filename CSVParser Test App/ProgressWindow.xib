@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="11762" systemVersion="16D32" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+    <dependencies>
+        <deployment identifier="macosx"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="11762"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <customObject id="-2" userLabel="File's Owner" customClass="ProgressWindowController" customModule="CSVParser_Test_App" customModuleProvider="target">
+            <connections>
+                <outlet property="progressIndicator" destination="Rm5-cI-9ia" id="xYw-aH-K5X"/>
+                <outlet property="window" destination="QvC-M9-y7g" id="yxq-yp-BOO"/>
+            </connections>
+        </customObject>
+        <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
+        <customObject id="-3" userLabel="Application" customClass="NSObject"/>
+        <window title="Window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" oneShot="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" animationBehavior="default" id="QvC-M9-y7g">
+            <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
+            <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
+            <rect key="contentRect" x="196" y="240" width="400" height="58"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1920" height="1057"/>
+            <view key="contentView" wantsLayer="YES" id="EiT-Mj-1SZ">
+                <rect key="frame" x="0.0" y="0.0" width="400" height="58"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="mZB-dl-jmE">
+                        <rect key="frame" x="304" y="10" width="82" height="32"/>
+                        <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="acR-b7-yOO">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                            <string key="keyEquivalent" base64-UTF8="YES">
+Gw
+</string>
+                        </buttonCell>
+                        <connections>
+                            <action selector="cancel:" target="-2" id="5BJ-H2-Kdz"/>
+                        </connections>
+                    </button>
+                    <progressIndicator wantsLayer="YES" maxValue="1" style="bar" translatesAutoresizingMaskIntoConstraints="NO" id="Rm5-cI-9ia">
+                        <rect key="frame" x="20" y="18" width="282" height="20"/>
+                    </progressIndicator>
+                </subviews>
+                <constraints>
+                    <constraint firstAttribute="trailing" secondItem="mZB-dl-jmE" secondAttribute="trailing" constant="20" symbolic="YES" id="31n-pn-9YT"/>
+                    <constraint firstAttribute="bottom" secondItem="mZB-dl-jmE" secondAttribute="bottom" constant="17" id="EcC-xQ-MYd"/>
+                    <constraint firstItem="Rm5-cI-9ia" firstAttribute="leading" secondItem="EiT-Mj-1SZ" secondAttribute="leading" constant="20" symbolic="YES" id="OUR-Oc-uIQ"/>
+                    <constraint firstItem="mZB-dl-jmE" firstAttribute="centerY" secondItem="Rm5-cI-9ia" secondAttribute="centerY" id="e3u-ap-U3z"/>
+                    <constraint firstItem="mZB-dl-jmE" firstAttribute="leading" secondItem="Rm5-cI-9ia" secondAttribute="trailing" constant="8" id="l8H-K4-v3Q"/>
+                    <constraint firstItem="mZB-dl-jmE" firstAttribute="top" secondItem="EiT-Mj-1SZ" secondAttribute="top" constant="20" symbolic="YES" id="uhd-0Q-7sJ"/>
+                </constraints>
+            </view>
+            <point key="canvasLocation" x="-236" y="17"/>
+        </window>
+    </objects>
+</document>
