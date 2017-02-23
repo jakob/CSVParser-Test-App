@@ -80,7 +80,7 @@ protocol PositionRetriever {
 	func currentPosition() -> CurrentPosition
 }
 
-class IteratorWithWarnings<Element>: IteratorProtocol, WarningProducer, PositionRetriever {
+class AbstractIterator<Element>: IteratorProtocol, WarningProducer, PositionRetriever {
 	internal var warnings = [CSVWarning]()
 	
 	func next() -> Element? {
@@ -96,7 +96,7 @@ class IteratorWithWarnings<Element>: IteratorProtocol, WarningProducer, Position
 	}
 }
 
-class ConcreteIteratorWithWarnings<I: IteratorProtocol>: IteratorWithWarnings<I.Element> {
+class ConcreteIterator<I: IteratorProtocol>: AbstractIterator<I.Element> {
 	var iterator: I
 	
 	init(_ iterator: I) {
