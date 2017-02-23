@@ -43,9 +43,7 @@ class CSVParser<InputIterator: IteratorProtocol>: Sequence, IteratorProtocol, Wa
 			}
 		}
 		
-		guard var token = inputIterator.next(), token.type != .endOfFile else {
-			return nil
-		}
+		guard var token = inputIterator.next(), token.type != .endOfFile else { return nil }
 		
 		while true {
 			
@@ -89,9 +87,7 @@ class CSVParser<InputIterator: IteratorProtocol>: Sequence, IteratorProtocol, Wa
 				fatalError("Impossible case: mode=\(mode), tokenType=\(token.type)")
 			}
 			
-			guard let nextToken = inputIterator.next() else {
-				return nil
-			}
+			guard let nextToken = inputIterator.next() else { return nil }
 			token = nextToken
 		}
 	}
@@ -114,7 +110,7 @@ class CSVParser<InputIterator: IteratorProtocol>: Sequence, IteratorProtocol, Wa
 }
 
 class SimpleParser<InputIterator: IteratorProtocol>: Sequence, IteratorProtocol, WarningProducer, PositionRetriever where InputIterator.Element == [CSVValue] {
-	var inputIterator: InputIterator
+	private var inputIterator: InputIterator
 	private var lineOffset: Int = 0
 	
 	init(inputIterator: InputIterator) {
