@@ -12,8 +12,11 @@ class FileByteIterator: Sequence, IteratorProtocol, WarningProducer, PositionRet
 	internal var warnings = [CSVWarning]()
 	private let fileURL: URL
 	private var fileHandle: FileHandle?
-	private var totalBytes: Int = 0
-	private var byteOffset: Int = 0
+	private var byteBuffer = [UInt8]()
+	private var totalBytes = 0
+	private var byteOffset = 0
+	private var bufferOffset = 0
+	private let bytesToRead = 1000
 	
 	init(fileURL: URL) {
 		self.fileURL = fileURL
@@ -36,19 +39,41 @@ class FileByteIterator: Sequence, IteratorProtocol, WarningProducer, PositionRet
 	func next() -> UInt8? {
 		if fileHandle == nil {
 			fileHandle = FileHandle(forReadingAtPath: fileURL.path)
-			
+			if fileHandle == nil {
+				print("File \(fileURL.lastPathComponent) could not be opened")
+			}
+		}
+		
+		if byteBuffer.isEmpty || bufferOffset >= bytesToRead {
+			guard let data = fileHandle?.readData(ofLength: bytesToRead), data.count > 0 else { return nil }
+			byteBuffer.append(contentsOf: data.elements())
+			bufferOffset = 0
+		}
+		
+		guard byteOffset < byteBuffer.count else { return nil }
+		let result = byteBuffer[byteOffset]
+		bufferOffset += 1
+		byteOffset += 1
+		return result
+	}
+	
+	/*
+	func next() -> UInt8? {
+		if fileHandle == nil {
+			fileHandle = FileHandle(forReadingAtPath: fileURL.path)
 			if fileHandle == nil {
 				warnings.append(CSVWarning(text: "File \(fileURL.lastPathComponent) could not be opened"))
 			}
 		}
-		
+
 		guard let data = fileHandle?.readData(ofLength: 1), data.count > 0 else { return nil }
-		
+
 		var byte: UInt8 = 0
 		data.copyBytes(to: &byte, count: MemoryLayout<UInt8>.size)
 		byteOffset += 1
 		return byte
 	}
+	*/
 	
 	func nextWarning() -> CSVWarning? {
 		return warnings.isEmpty ? nil : warnings.removeFirst()
@@ -86,5 +111,13 @@ class DataByteIterator: Sequence, IteratorProtocol, PositionRetriever {
 		currPos.totalBytes = totalBytes
 		currPos.byteOffset = byteOffset
 		return currPos
+	}
+}
+
+extension Data {
+	func elements<T>() -> [T] {
+		return withUnsafeBytes {
+			Array(UnsafeBufferPointer<T>(start: $0, count: self.count/MemoryLayout<T>.size))
+		}
 	}
 }
