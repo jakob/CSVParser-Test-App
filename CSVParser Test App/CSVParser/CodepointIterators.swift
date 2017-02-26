@@ -158,15 +158,15 @@ class UTF8CodepointIterator<InputIterator: IteratorProtocol>: Sequence, Iterator
 		return warnings.isEmpty ? nil : warnings.removeFirst()
 	}
 	
-	func currentPosition() -> CurrentPosition {
-		var currPos: CurrentPosition
+	func actualPosition() -> Position {
+		var position: Position
 		if let positionRetriever = inputIterator as? PositionRetriever {
-			currPos = positionRetriever.currentPosition()
+			position = positionRetriever.actualPosition()
 		} else {
-			currPos = CurrentPosition()
+			position = Position()
 		}
-		currPos.totalScalars = totalScalars
-		currPos.scalarOffset = scalarOffset
-		return currPos
+		position.totalScalars = totalScalars
+		position.scalarOffset = scalarOffset
+		return position
 	}
 }

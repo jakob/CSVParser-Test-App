@@ -49,14 +49,14 @@ class TokenIterator<InputIterator: IteratorProtocol>: Sequence, IteratorProtocol
 		return nil
 	}
 	
-	func currentPosition() -> CurrentPosition {
-		var currPos: CurrentPosition
+	func actualPosition() -> Position {
+		var position: Position
 		if let positionRetriever = inputIterator as? PositionRetriever {
-			currPos = positionRetriever.currentPosition()
+			position = positionRetriever.actualPosition()
 		} else {
-			currPos = CurrentPosition()
+			position = Position()
 		}
-		currPos.tokenOffset = tokenOffset
-		return currPos
+		position.tokenOffset = tokenOffset
+		return position
 	}
 }

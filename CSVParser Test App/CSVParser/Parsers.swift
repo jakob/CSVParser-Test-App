@@ -96,16 +96,16 @@ class CSVParser<InputIterator: IteratorProtocol>: Sequence, IteratorProtocol, Wa
 		return warnings.isEmpty ? nil : warnings.removeFirst()
 	}
 	
-	func currentPosition() -> CurrentPosition {
-		var currPos: CurrentPosition
+	func actualPosition() -> Position {
+		var position: Position
 		if let positionRetriever = inputIterator as? PositionRetriever {
-			currPos = positionRetriever.currentPosition()
+			position = positionRetriever.actualPosition()
 		} else {
-			currPos = CurrentPosition()
+			position = Position()
 		}
-		currPos.rowOffset = rowOffset
-		currPos.lineOffset = lineOffset
-		return currPos
+		position.rowOffset = rowOffset
+		position.lineOffset = lineOffset
+		return position
 	}
 }
 
@@ -130,14 +130,14 @@ class SimpleParser<InputIterator: IteratorProtocol>: Sequence, IteratorProtocol,
 		return nil
 	}
 	
-	func currentPosition() -> CurrentPosition {
-		var currPos: CurrentPosition
+	func actualPosition() -> Position {
+		var position: Position
 		if let positionRetriever = inputIterator as? PositionRetriever {
-			currPos = positionRetriever.currentPosition()
+			position = positionRetriever.actualPosition()
 		} else {
-			currPos = CurrentPosition()
+			position = Position()
 		}
-		currPos.lineOffset = lineOffset
-		return currPos
+		position.lineOffset = lineOffset
+		return position
 	}
 }

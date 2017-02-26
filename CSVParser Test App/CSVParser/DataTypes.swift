@@ -53,7 +53,7 @@ enum CSVParsingMode {
 	case afterQuote
 }
 
-struct CurrentPosition: CustomStringConvertible {
+struct Position: CustomStringConvertible {
 	var totalBytes: Int?
 	var byteOffset: Int?
 	var totalScalars: Int?
@@ -77,7 +77,7 @@ protocol WarningProducer {
 }
 
 protocol PositionRetriever {
-	func currentPosition() -> CurrentPosition
+	func actualPosition() -> Position
 }
 
 class AbstractIterator<Element>: IteratorProtocol, WarningProducer, PositionRetriever {
@@ -91,7 +91,7 @@ class AbstractIterator<Element>: IteratorProtocol, WarningProducer, PositionRetr
 		fatalError("This method is abstract")
 	}
 	
-	func currentPosition() -> CurrentPosition {
+	func actualPosition() -> Position {
 		fatalError("This method is abstract")
 	}
 }
@@ -114,10 +114,10 @@ class ConcreteIterator<I: IteratorProtocol>: AbstractIterator<I.Element> {
 		return nil
 	}
 	
-	override func currentPosition() -> CurrentPosition {
+	override func actualPosition() -> Position {
 		if let positionRetriever = iterator as? PositionRetriever {
-			return positionRetriever.currentPosition()
+			return positionRetriever.actualPosition()
 		}
-		return CurrentPosition()
+		return Position()
 	}
 }

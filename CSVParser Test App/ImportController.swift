@@ -103,7 +103,7 @@ class ImportController: NSObject {
 		while let elem = iterator.next() {
 			while let warning = iterator.nextWarning() { print("WARNING: \(warning.text)") }
 			
-			print(iterator.currentPosition())
+			print(iterator.actualPosition())
 			
 			if firstRowAsHeader && rowIdx == 0 {
 				headerData.append(contentsOf: elem)
@@ -174,13 +174,8 @@ class ImportController: NSObject {
 			let updateInterval = 0.020
 			var shouldReport = true
 			
-			while let _ = iterator.next() {
-				
-				if self.progressWindowController!.didCancel {
-					break
-				}
-				
-				if let progress = iterator.currentPosition().progress {
+			while let _ = iterator.next(), self.progressWindowController!.didCancel == false {
+				if let progress = iterator.actualPosition().progress {
 					if shouldReport && Date().timeIntervalSince1970 >= lastTime+updateInterval {
 						lastTime = Date().timeIntervalSince1970
 						shouldReport = false

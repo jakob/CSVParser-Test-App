@@ -61,8 +61,8 @@ class CSVDocument: Sequence {
 			}
 		}
 		
-		let tokenizer = TokenIterator(inputIterator: codepointIterator, config: config)
-		let parser = CSVParser(inputIterator: tokenizer, config: config)
+		let tokenIterator = TokenIterator(inputIterator: codepointIterator, config: config)
+		let parser = CSVParser(inputIterator: tokenIterator, config: config)
 		return ConcreteIterator(parser)
 	}
 	

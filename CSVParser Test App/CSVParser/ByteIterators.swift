@@ -79,11 +79,11 @@ class FileByteIterator: Sequence, IteratorProtocol, WarningProducer, PositionRet
 		return warnings.isEmpty ? nil : warnings.removeFirst()
 	}
 	
-	func currentPosition() -> CurrentPosition {
-		var currPos = CurrentPosition()
-		currPos.totalBytes = totalBytes
-		currPos.byteOffset = byteOffset
-		return currPos
+	func actualPosition() -> Position {
+		var position = Position()
+		position.totalBytes = totalBytes
+		position.byteOffset = byteOffset
+		return position
 	}
 }
 
@@ -106,11 +106,11 @@ class DataByteIterator: Sequence, IteratorProtocol, PositionRetriever {
 		return nil
 	}
 	
-	func currentPosition() -> CurrentPosition {
-		var currPos = CurrentPosition()
-		currPos.totalBytes = totalBytes
-		currPos.byteOffset = byteOffset
-		return currPos
+	func actualPosition() -> Position {
+		var position = Position()
+		position.totalBytes = totalBytes
+		position.byteOffset = byteOffset
+		return position
 	}
 }
 
