@@ -207,6 +207,7 @@ class CSVParser_Test_AppTests: XCTestCase {
 		}
 		
 		XCTAssertEqual(idx, expected.count, "Did not receive expected number of lines")
+		XCTAssertEqual(iterator.nextWarning()?.type, .invalidByteForUTF8Encoding)
 		XCTAssertNil(iterator.nextWarning())
 	}
 	
@@ -221,7 +222,8 @@ class CSVParser_Test_AppTests: XCTestCase {
 		
 		var idx = 0
 		while let elem = iterator.next() {
-			XCTAssertNil(iterator.nextWarning())
+			XCTAssertEqual(iterator.nextWarning()?.type, .unexpectedCharacterAfterQuote)
+			
 			XCTAssertEqual(elem.count, expected[idx].count, "Line \(idx) does not have expected length")
 			XCTAssertEqual(elem, expected[idx], "Line \(idx) is not equal")
 			idx += 1
@@ -249,7 +251,7 @@ class CSVParser_Test_AppTests: XCTestCase {
 		}
 		
 		XCTAssertEqual(idx, expected.count, "Did not receive expected number of lines")
-		XCTAssertNil(iterator.nextWarning())
+		XCTAssertEqual(iterator.nextWarning()?.type, .unexpectedCharacterAfterQuote)
 	}
 	
 	func testMissingQuoteAtEnd() {
@@ -258,7 +260,7 @@ class CSVParser_Test_AppTests: XCTestCase {
 		let iterator = csvDoc.makeIterator()
 		
 		let expected = [
-			["1","2","3"]
+			["1","2","3\n"]
 		]
 		
 		var idx = 0
