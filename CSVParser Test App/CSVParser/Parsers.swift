@@ -32,8 +32,8 @@ class CSVParser<InputIterator: IteratorProtocol>: Sequence, IteratorProtocol, Wa
 			currValue = ""
 			rowOffset += 1
 		}
-		func appendWarning(_ text: String) {
-			let warning = CSVWarning(text: text)
+		func appendWarning(type: CSVWarning.WarningType) {
+			let warning = CSVWarning(type: type, position: actualPosition())
 			warnings.append(warning)
 		}
 		
@@ -55,7 +55,7 @@ class CSVParser<InputIterator: IteratorProtocol>: Sequence, IteratorProtocol, Wa
 				
 			case (.afterQuote, .character):
 				currValue += token.content
-				appendWarning("Unexpected character after quote")
+				appendWarning(type: .unexpectedCharacterAfterQuote)
 				
 			case (_, .character):
 				currValue += token.content
@@ -64,7 +64,7 @@ class CSVParser<InputIterator: IteratorProtocol>: Sequence, IteratorProtocol, Wa
 				mode = .afterQuote
 				
 			case (.insideQuote, .endOfFile):
-				appendWarning("Unexpected EOF while inside quote")
+				appendWarning(type: .unexpectedEOFWhileInsideQuote)
 				appendValue()
 				return values
 				
@@ -76,7 +76,7 @@ class CSVParser<InputIterator: IteratorProtocol>: Sequence, IteratorProtocol, Wa
 				mode = .beforeQuote
 				
 			case (.beforeQuote, .quote):
-				if !currValue.isEmpty { appendWarning("Unexpected quote while value is empty") }
+				if !currValue.isEmpty { appendWarning(type: .unexpectedQuoteWhileValueEmpty) }
 				mode = .insideQuote
 				
 			case (_, .lineSeparator), (_, .endOfFile):

@@ -44,8 +44,8 @@ class UTF8CodepointIterator<InputIterator: IteratorProtocol>: Sequence, Iterator
 	
 	
 	func next() -> UnicodeScalar? {
-		func appendWarning(_ text: String) {
-			let warning = CSVWarning(text: text)
+		func appendWarning(type: CSVWarning.WarningType) {
+			let warning = CSVWarning(type: type, position: actualPosition())
 			warnings.append(warning)
 		}
 		
@@ -59,7 +59,7 @@ class UTF8CodepointIterator<InputIterator: IteratorProtocol>: Sequence, Iterator
 		
 		// continuation byte
 		else if (byte & 0b0100_0000) == 0 {
-			appendWarning("Continuation byte at invalid position")
+			appendWarning(type: .invalidByteForUTF8Encoding)
 			return ItemReplacementChar
 		}
 		
@@ -67,12 +67,12 @@ class UTF8CodepointIterator<InputIterator: IteratorProtocol>: Sequence, Iterator
 		else if (byte & 0b0010_0000) == 0 {
 			let a = byte
 			guard let b = nextByte() else {
-				appendWarning("Expected second byte of group but found nil")
+				appendWarning(type: .unexpectedNilByte)
 				return ItemReplacementChar
 			}
 			guard (b & 0b1100_0000) == 0b1000_0000 else {
 				returnByte(b)
-				appendWarning("Expected continuation byte")
+				appendWarning(type: .expectedUTF8ContinuationByte)
 				return ItemReplacementChar
 			}
 			
@@ -86,21 +86,21 @@ class UTF8CodepointIterator<InputIterator: IteratorProtocol>: Sequence, Iterator
 			
 			let a = byte
 			guard let b = nextByte() else {
-				appendWarning("Expected second byte of group but found nil")
+				appendWarning(type: .unexpectedNilByte)
 				return ItemReplacementChar
 			}
 			guard (b & 0b1100_0000) == 0b1000_0000 else {
 				returnByte(b)
-				appendWarning("Expected continuation byte")
+				appendWarning(type: .expectedUTF8ContinuationByte)
 				return ItemReplacementChar
 			}
 			guard let c = nextByte() else {
-				appendWarning("Expected third byte of group but found nil")
+				appendWarning(type: .unexpectedNilByte)
 				return ItemReplacementChar
 			}
 			guard (c & 0b1100_0000) == 0b1000_0000 else {
 				returnByte(c)
-				appendWarning("Expected continuation byte")
+				appendWarning(type: .expectedUTF8ContinuationByte)
 				return ItemReplacementChar
 			}
 			
@@ -114,30 +114,30 @@ class UTF8CodepointIterator<InputIterator: IteratorProtocol>: Sequence, Iterator
 			
 			let a = byte
 			guard let b = nextByte() else {
-				appendWarning("Expected second byte of group but found nil")
+				appendWarning(type: .unexpectedNilByte)
 				return ItemReplacementChar
 			}
 			guard (b & 0b1100_0000) == 0b1000_0000 else {
 				returnByte(b)
-				appendWarning("Expected continuation byte")
+				appendWarning(type: .expectedUTF8ContinuationByte)
 				return ItemReplacementChar
 			}
 			guard let c = nextByte() else {
-				appendWarning("Expected third byte of group but found nil")
+				appendWarning(type: .unexpectedNilByte)
 				return ItemReplacementChar
 			}
 			guard (c & 0b1100_0000) == 0b1000_0000 else {
 				returnByte(c)
-				appendWarning("Expected continuation byte")
+				appendWarning(type: .expectedUTF8ContinuationByte)
 				return ItemReplacementChar
 			}
 			guard let d = nextByte() else {
-				appendWarning("Expected fourth byte of group but found nil")
+				appendWarning(type: .unexpectedNilByte)
 				return ItemReplacementChar
 			}
 			guard (d & 0b1100_0000) == 0b1000_0000 else {
 				returnByte(d)
-				appendWarning("Expected continuation byte")
+				appendWarning(type: .expectedUTF8ContinuationByte)
 				return ItemReplacementChar
 			}
 			
@@ -149,7 +149,7 @@ class UTF8CodepointIterator<InputIterator: IteratorProtocol>: Sequence, Iterator
 		
 		// invalid byte
 		else {
-			appendWarning("Invalid byte")
+			appendWarning(type: .invalidByteForUTF8Encoding)
 			return ItemReplacementChar
 		}
 	}

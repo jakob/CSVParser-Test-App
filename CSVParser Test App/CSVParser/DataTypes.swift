@@ -44,7 +44,38 @@ struct CSVValue {
 }
 
 struct CSVWarning {
-	let text: String
+	enum WarningType {
+		case fileOpenError
+		case fileSizeError
+		case invalidByteForUTF8Encoding
+		case expectedUTF8ContinuationByte
+		case unexpectedNilByte
+		case unexpectedCharacterAfterQuote
+		case unexpectedEOFWhileInsideQuote
+		case unexpectedQuoteWhileValueEmpty
+	}
+	let type: WarningType
+	let position: Position
+	var text: String {
+		switch type {
+		case .fileOpenError:
+			return "fileOpenError"
+		case .fileSizeError:
+			return "fileSizeError"
+		case .invalidByteForUTF8Encoding:
+			return "invalidByteForUTF8Encoding"
+		case .expectedUTF8ContinuationByte:
+			return "expectedUTF8ContinuationByte"
+		case .unexpectedNilByte:
+			return "unexpectedNilByte"
+		case .unexpectedCharacterAfterQuote:
+			return "unexpectedCharacterAfterQuote"
+		case .unexpectedEOFWhileInsideQuote:
+			return "unexpectedEOFWhileInsideQuote"
+		case .unexpectedQuoteWhileValueEmpty:
+			return "unexpectedQuoteWhileValueEmpty"
+		}
+	}
 }
 
 enum CSVParsingMode {

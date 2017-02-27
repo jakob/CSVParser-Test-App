@@ -16,7 +16,7 @@ class FileByteIterator: Sequence, IteratorProtocol, WarningProducer, PositionRet
 	private var totalBytes = 0
 	private var byteOffset = 0
 	private var bufferOffset = 0
-	private let bytesToRead = 1000
+	private let bytesToRead = 4000
 	
 	init(fileURL: URL) {
 		self.fileURL = fileURL
@@ -27,7 +27,7 @@ class FileByteIterator: Sequence, IteratorProtocol, WarningProducer, PositionRet
 				totalBytes = fileSize
 			}
 		} catch {
-			warnings.append(CSVWarning(text: "Error getting filesize of \(fileURL.lastPathComponent)"))
+			warnings.append(CSVWarning(type: .fileSizeError, position: actualPosition()))
 		}
 	}
 	
@@ -40,7 +40,7 @@ class FileByteIterator: Sequence, IteratorProtocol, WarningProducer, PositionRet
 		if fileHandle == nil {
 			fileHandle = FileHandle(forReadingAtPath: fileURL.path)
 			if fileHandle == nil {
-				print("File \(fileURL.lastPathComponent) could not be opened")
+				warnings.append(CSVWarning(type: .fileOpenError, position: actualPosition()))
 			}
 		}
 		
@@ -56,24 +56,6 @@ class FileByteIterator: Sequence, IteratorProtocol, WarningProducer, PositionRet
 		byteOffset += 1
 		return result
 	}
-	
-	/*
-	func next() -> UInt8? {
-		if fileHandle == nil {
-			fileHandle = FileHandle(forReadingAtPath: fileURL.path)
-			if fileHandle == nil {
-				warnings.append(CSVWarning(text: "File \(fileURL.lastPathComponent) could not be opened"))
-			}
-		}
-
-		guard let data = fileHandle?.readData(ofLength: 1), data.count > 0 else { return nil }
-
-		var byte: UInt8 = 0
-		data.copyBytes(to: &byte, count: MemoryLayout<UInt8>.size)
-		byteOffset += 1
-		return byte
-	}
-	*/
 	
 	func nextWarning() -> CSVWarning? {
 		return warnings.isEmpty ? nil : warnings.removeFirst()
