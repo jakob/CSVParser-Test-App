@@ -10,11 +10,11 @@ import Foundation
 
 struct CSVConfig {
 	var encoding = String.Encoding.utf8
-	var delimiterCharacter: Character = ","
-	var quoteCharacter: Character = "\""
-	var escapeCharacter: Character = "\\"
-	var decimalCharacter: Character = "."
-	var newlineCharacter: Character = "\n"
+	var delimiterCharacter: UnicodeScalar = ","
+	var quoteCharacter: UnicodeScalar = "\""
+	var escapeCharacter: UnicodeScalar = "\\"
+	var decimalCharacter: UnicodeScalar = "."
+	var newlineCharacter: UnicodeScalar = "\n"
 }
 
 struct CSVToken: Equatable {

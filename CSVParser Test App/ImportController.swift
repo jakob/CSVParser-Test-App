@@ -24,7 +24,7 @@ class ImportController: NSObject {
 	fileprivate var tableData = [[String]]()
 	private var headerData = [String]()
 	private var fileURL: URL?
-	private var delimiterCharacter: Character {
+	private var delimiterCharacter: UnicodeScalar {
 		var char: String
 		let selIdx = delimiterSegControl?.selectedSegment ?? 0
 		switch selIdx {
@@ -34,9 +34,9 @@ class ImportController: NSObject {
 			case 3: char = "|"
 			default: char = ","
 		}
-		return Character(char)
+		return UnicodeScalar(char)!
 	}
-	private var decimalCharacter: Character {
+	private var decimalCharacter: UnicodeScalar {
 		var char: String
 		let selIdx = decimalSegControl?.selectedSegment ?? 0
 		switch selIdx {
@@ -44,9 +44,9 @@ class ImportController: NSObject {
 			case 1: char = ","
 			default: char = "."
 		}
-		return Character(char)
+		return UnicodeScalar(char)!
 	}
-	private var quoteCharacter: Character {
+	private var quoteCharacter: UnicodeScalar {
 		var char: String
 		let selIdx = quoteSegControl?.selectedSegment ?? 0
 		switch selIdx {
@@ -55,7 +55,7 @@ class ImportController: NSObject {
 			case 2: char = ""
 			default: char = "\""
 		}
-		return Character(char)
+		return UnicodeScalar(char)!
 	}
 	private var encoding: String.Encoding {
 		guard let selectedItem = encodingPopupButton?.selectedItem else { return .utf8 }

@@ -25,7 +25,7 @@ class TokenIterator<InputIterator: IteratorProtocol>: Sequence, IteratorProtocol
 		
 		let type: CSVToken.TokenType
 		
-		switch Character(char) {
+		switch char {
 		case config.delimiterCharacter:
 			type = .delimiter
 		case config.newlineCharacter:
