@@ -10,15 +10,6 @@ import XCTest
 @testable import CSVParser_Test_App
 
 class CSVParser_Test_AppTests: XCTestCase {
-	override func setUp() {
-		super.setUp()
-	}
-	
-	override func tearDown() {
-		super.tearDown()
-	}
-	
-	
 	
 	func testString() {
 		let string = "1,\"2\",3\n4,\"5\"\n6,\"7\",\"8\",\"9\""
@@ -216,21 +207,9 @@ class CSVParser_Test_AppTests: XCTestCase {
 		let csvDoc = CSVDocument(fileURL: fileURL)
 		let iterator = csvDoc.makeIterator()
 		
-		let expected = [
-			["1","2","3"]
-		]
-		
-		var idx = 0
-		while let elem = iterator.next() {
+		while let _ = iterator.next() {
 			XCTAssertEqual(iterator.nextWarning()?.type, .unexpectedCharacterAfterQuote)
-			
-			XCTAssertEqual(elem.count, expected[idx].count, "Line \(idx) does not have expected length")
-			XCTAssertEqual(elem, expected[idx], "Line \(idx) is not equal")
-			idx += 1
 		}
-		
-		XCTAssertEqual(idx, expected.count, "Did not receive expected number of lines")
-		XCTAssertNil(iterator.nextWarning())
 	}
 	
 	func testMissingBackslashBeforeValue() {
@@ -238,20 +217,9 @@ class CSVParser_Test_AppTests: XCTestCase {
 		let csvDoc = CSVDocument(fileURL: fileURL)
 		let iterator = csvDoc.makeIterator()
 		
-		let expected = [
-			["1","2","3"]
-		]
-		
-		var idx = 0
-		while let elem = iterator.next() {
-			XCTAssertNil(iterator.nextWarning())
-			XCTAssertEqual(elem.count, expected[idx].count, "Line \(idx) does not have expected length")
-			XCTAssertEqual(elem, expected[idx], "Line \(idx) is not equal")
-			idx += 1
+		while let _ = iterator.next() {
+			XCTAssertEqual(iterator.nextWarning()?.type, .unexpectedCharacterAfterQuote)
 		}
-		
-		XCTAssertEqual(idx, expected.count, "Did not receive expected number of lines")
-		XCTAssertEqual(iterator.nextWarning()?.type, .unexpectedCharacterAfterQuote)
 	}
 	
 	func testMissingQuoteAtEnd() {
@@ -436,6 +404,27 @@ class CSVParser_Test_AppTests: XCTestCase {
 		XCTAssertNil(iterator.nextWarning())
 	}
 	
+	func testEscapedQuote() {
+		let fileURL = Bundle(for: type(of: self)).url(forResource: "Reading Test Documents/escaped-quote", withExtension: "csv")!
+		let csvDoc = CSVDocument(fileURL: fileURL)
+		let iterator = csvDoc.makeIterator()
+		
+		let expected = [
+			["a","b","\"","c"]
+		]
+		
+		var idx = 0
+		while let elem = iterator.next() {
+			XCTAssertNil(iterator.nextWarning())
+			XCTAssertEqual(elem.count, expected[idx].count, "Line \(idx) does not have expected length")
+			XCTAssertEqual(elem, expected[idx], "Line \(idx) is not equal")
+			idx += 1
+		}
+		
+		XCTAssertEqual(idx, expected.count, "Did not receive expected number of lines")
+		XCTAssertNil(iterator.nextWarning())
+	}
+	
 	func testPerformance() {
 		self.measure {
 			let fileURL = Bundle(for: type(of: self)).url(forResource: "Reading Test Documents/semi-big-file", withExtension: "csv")!
@@ -447,4 +436,58 @@ class CSVParser_Test_AppTests: XCTestCase {
 			XCTAssertNil(iterator.nextWarning())
 		}
 	}
+	
+	func testPerformanceData() {
+		let fileURL = Bundle(for: type(of: self)).url(forResource: "Reading Test Documents/semi-big-file", withExtension: "csv")!
+		self.measure {
+			let csvData = try! Data(contentsOf: fileURL)
+			let csvDoc = CSVDocument(data: csvData)
+			let iterator = csvDoc.makeIterator()
+			
+			while let _ = iterator.next() {}
+			
+			XCTAssertNil(iterator.nextWarning())
+		}
+	}
+
+	func testPerformanceString() {
+		let fileURL = Bundle(for: type(of: self)).url(forResource: "Reading Test Documents/semi-big-file", withExtension: "csv")!
+		self.measure {
+			let csvString = try! String(contentsOf: fileURL)
+			let csvDoc = CSVDocument(string: csvString)
+			let iterator = csvDoc.makeIterator()
+			
+			while let _ = iterator.next() {}
+			
+			XCTAssertNil(iterator.nextWarning())
+		}
+	}
+
+	func testPerformanceIterators() {
+		let fileURL = Bundle(for: type(of: self)).url(forResource: "Reading Test Documents/semi-big-file", withExtension: "csv")!
+		self.measure {
+			let csvString = try! String(contentsOf: fileURL)
+			let iterator = csvString.unicodeScalars.makeIterator()
+			let config = CSVConfig()
+			let tokenizer = TokenIterator(inputIterator: iterator, config: config)
+			let parser = CSVParser(inputIterator: tokenizer, config: config)
+			let simpleParser = SimpleParser(inputIterator: parser)
+			while let _ = simpleParser.next() {}
+			XCTAssertNil(simpleParser.nextWarning())
+		}
+	}
+	
+	/*
+	func testPerformanceBigFile() {
+		self.measure {
+			let fileURL = Bundle(for: type(of: self)).url(forResource: "Reading Test Documents/really-big-file", withExtension: "csv")!
+			let csvDoc = CSVDocument(fileURL: fileURL)
+			let iterator = csvDoc.makeIterator()
+			
+			while let _ = iterator.next() {}
+			
+			XCTAssertNil(iterator.nextWarning())
+		}
+	}
+	*/
 }
