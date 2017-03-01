@@ -28,10 +28,12 @@ class TokenIterator<InputIterator: IteratorProtocol>: Sequence, IteratorProtocol
 		switch char {
 		case config.delimiterCharacter:
 			type = .delimiter
-		case config.newlineCharacter:
-			type = .lineSeparator
 		case config.quoteCharacter:
 			type = .quote
+		case config.escapeCharacter:
+			type = .escape
+		case config.newlineCharacter:
+			type = .lineSeparator
 		default:
 			type = .character
 		}
