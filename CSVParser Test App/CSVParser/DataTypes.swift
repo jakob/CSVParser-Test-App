@@ -19,10 +19,11 @@ struct CSVConfig {
 
 struct CSVToken: Equatable {
 	enum TokenType {
-		case delimiter
-		case lineSeparator
-		case quote
 		case character
+		case delimiter
+		case quote
+		case escape
+		case lineSeparator
 		case endOfFile
 	}
 	var type: TokenType
@@ -52,7 +53,8 @@ struct CSVWarning {
 		case unexpectedNilByte
 		case unexpectedCharacterAfterQuote
 		case unexpectedEOFWhileInsideQuote
-		case unexpectedQuoteWhileValueEmpty
+		case unexpectedQuoteWhileValueNotEmpty
+		case unrecognizedEscapedCharacter
 	}
 	let type: WarningType
 	let position: Position
@@ -72,8 +74,10 @@ struct CSVWarning {
 			return "unexpectedCharacterAfterQuote"
 		case .unexpectedEOFWhileInsideQuote:
 			return "unexpectedEOFWhileInsideQuote"
-		case .unexpectedQuoteWhileValueEmpty:
-			return "unexpectedQuoteWhileValueEmpty"
+		case .unexpectedQuoteWhileValueNotEmpty:
+			return "unexpectedQuoteWhileValueNotEmpty"
+		case .unrecognizedEscapedCharacter:
+			return "unrecognizedEscapedCharacter"
 		}
 	}
 }
@@ -82,6 +86,7 @@ enum CSVParsingMode {
 	case beforeQuote
 	case insideQuote
 	case afterQuote
+	case escaped
 }
 
 struct Position: CustomStringConvertible {
