@@ -47,7 +47,23 @@ class CSVParser<InputIterator: IteratorProtocol>: Sequence, IteratorProtocol, Wa
 		
 		while true {
 			
+			//print("mode=\(mode), type=\(token.type), char=\(token.content)")
+			
 			switch (mode, token.type) {
+			
+			// escape character inside quote
+			case (.insideQuote, .escape):
+				mode = .escaped
+			
+			// quote or backslash in escaped mode
+			case (.escaped, .quote), (.escaped, .escape):
+				currValue += token.content
+				mode = .insideQuote
+			
+			// unrecognized escaped character
+			case (.escaped, _):
+				appendWarning(type: .unrecognizedEscapedCharacter)
+				mode = .insideQuote
 				
 			case (.afterQuote, .quote):
 				currValue += token.content
@@ -76,8 +92,12 @@ class CSVParser<InputIterator: IteratorProtocol>: Sequence, IteratorProtocol, Wa
 				mode = .beforeQuote
 				
 			case (.beforeQuote, .quote):
-				if !currValue.isEmpty { appendWarning(type: .unexpectedQuoteWhileValueEmpty) }
-				mode = .insideQuote
+				if !currValue.isEmpty {
+					currValue += token.content
+					appendWarning(type: .unexpectedQuoteWhileValueNotEmpty)
+				} else {
+					mode = .insideQuote
+				}
 				
 			case (_, .lineSeparator), (_, .endOfFile):
 				appendValue()
