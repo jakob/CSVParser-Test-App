@@ -45,6 +45,7 @@ class CSVParser<InputIterator: IteratorProtocol>: Sequence, IteratorProtocol, Wa
 		
 		guard var token = inputIterator.next(), token.type != .endOfFile else { return nil }
 		
+		var lastEscapeToken: CSVToken?
 		while true {
 			
 			//print("mode=\(mode), type=\(token.type), char=\(token.content)")
@@ -53,25 +54,35 @@ class CSVParser<InputIterator: IteratorProtocol>: Sequence, IteratorProtocol, Wa
 			
 			// escape character inside quote
 			case (.insideQuote, .escape):
+				lastEscapeToken = token
 				mode = .escaped
-			
+				
 			// quote or backslash in escaped mode
 			case (.escaped, .quote), (.escaped, .escape):
 				currValue += token.content
 				mode = .insideQuote
-			
+				
 			// unrecognized escaped character
 			case (.escaped, _):
+				if let content = lastEscapeToken?.content {
+					currValue += content
+					lastEscapeToken = nil
+				}
+				currValue += token.content
 				appendWarning(type: .unrecognizedEscapedCharacter)
 				mode = .insideQuote
 				
 			case (.afterQuote, .quote):
-				currValue += token.content
-				mode = .insideQuote
+				if config.quoteCharacter == config.escapeCharacter {
+					currValue += token.content
+					mode = .insideQuote
+				} else {
+					appendWarning(type: .unexpectedQuote)
+				}
 				
 			case (.afterQuote, .character):
 				currValue += token.content
-				appendWarning(type: .unexpectedCharacterAfterQuote)
+				appendWarning(type: .unexpectedCharacter)
 				
 			case (_, .character):
 				currValue += token.content
@@ -80,7 +91,7 @@ class CSVParser<InputIterator: IteratorProtocol>: Sequence, IteratorProtocol, Wa
 				mode = .afterQuote
 				
 			case (.insideQuote, .endOfFile):
-				appendWarning(type: .unexpectedEOFWhileInsideQuote)
+				appendWarning(type: .unexpectedEOF)
 				appendValue()
 				return values
 				
@@ -94,7 +105,7 @@ class CSVParser<InputIterator: IteratorProtocol>: Sequence, IteratorProtocol, Wa
 			case (.beforeQuote, .quote):
 				if !currValue.isEmpty {
 					currValue += token.content
-					appendWarning(type: .unexpectedQuoteWhileValueNotEmpty)
+					appendWarning(type: .unexpectedQuote)
 				} else {
 					mode = .insideQuote
 				}
