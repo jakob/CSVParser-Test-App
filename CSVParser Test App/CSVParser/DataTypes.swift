@@ -51,9 +51,9 @@ struct CSVWarning {
 		case invalidByteForUTF8Encoding
 		case expectedUTF8ContinuationByte
 		case unexpectedNilByte
-		case unexpectedCharacterAfterQuote
-		case unexpectedEOFWhileInsideQuote
-		case unexpectedQuoteWhileValueNotEmpty
+		case unexpectedCharacter
+		case unexpectedQuote
+		case unexpectedEOF
 		case unrecognizedEscapedCharacter
 	}
 	let type: WarningType
@@ -70,12 +70,12 @@ struct CSVWarning {
 			return "expectedUTF8ContinuationByte"
 		case .unexpectedNilByte:
 			return "unexpectedNilByte"
-		case .unexpectedCharacterAfterQuote:
-			return "unexpectedCharacterAfterQuote"
-		case .unexpectedEOFWhileInsideQuote:
-			return "unexpectedEOFWhileInsideQuote"
-		case .unexpectedQuoteWhileValueNotEmpty:
-			return "unexpectedQuoteWhileValueNotEmpty"
+		case .unexpectedCharacter:
+			return "unexpectedCharacter"
+		case .unexpectedQuote:
+			return "unexpectedQuote"
+		case .unexpectedEOF:
+			return "unexpectedEOF"
 		case .unrecognizedEscapedCharacter:
 			return "unrecognizedEscapedCharacter"
 		}
