@@ -152,7 +152,6 @@ class CSVParser_Test_AppTests: XCTestCase {
 		XCTAssertNil(iterator.nextWarning())
 	}
 	
-	
 	func testDifferentLinesQuoted() {
 		let fileURL = Bundle(for: type(of: self)).url(forResource: "Reading Test Documents/different-lines-quoted", withExtension: "csv")!
 		let csvDoc = CSVDocument(fileURL: fileURL)
@@ -208,7 +207,7 @@ class CSVParser_Test_AppTests: XCTestCase {
 		let iterator = csvDoc.makeIterator()
 		
 		while let _ = iterator.next() {
-			XCTAssertEqual(iterator.nextWarning()?.type, .unexpectedCharacterAfterQuote)
+			XCTAssertEqual(iterator.nextWarning()?.type, .unexpectedQuote)
 		}
 	}
 	
@@ -218,7 +217,7 @@ class CSVParser_Test_AppTests: XCTestCase {
 		let iterator = csvDoc.makeIterator()
 		
 		while let _ = iterator.next() {
-			XCTAssertEqual(iterator.nextWarning()?.type, .unexpectedCharacterAfterQuote)
+			XCTAssertEqual(iterator.nextWarning()?.type, .unexpectedCharacter)
 		}
 	}
 	
@@ -228,7 +227,7 @@ class CSVParser_Test_AppTests: XCTestCase {
 		let iterator = csvDoc.makeIterator()
 		
 		while let _ = iterator.next() {
-			XCTAssertEqual(iterator.nextWarning()?.type, .unexpectedEOFWhileInsideQuote)
+			XCTAssertEqual(iterator.nextWarning()?.type, .unexpectedEOF)
 		}
 	}
 	
@@ -243,7 +242,7 @@ class CSVParser_Test_AppTests: XCTestCase {
 		
 		var idx = 0
 		while let elem = iterator.next() {
-			XCTAssertEqual(iterator.nextWarning()?.type, .unexpectedEOFWhileInsideQuote)
+			XCTAssertEqual(iterator.nextWarning()?.type, .unexpectedEOF)
 			XCTAssertEqual(elem.count, expected[idx].count, "Line \(idx) does not have expected length")
 			XCTAssertEqual(elem, expected[idx], "Line \(idx) is not equal")
 			idx += 1
@@ -318,7 +317,7 @@ class CSVParser_Test_AppTests: XCTestCase {
 		
 		var idx = 0
 		while let elem = iterator.next() {
-			XCTAssertEqual(iterator.nextWarning()?.type, .unexpectedQuoteWhileValueNotEmpty)
+			XCTAssertEqual(iterator.nextWarning()?.type, .unexpectedQuote)
 			XCTAssertEqual(elem.count, expected[idx].count, "Line \(idx) does not have expected length")
 			XCTAssertEqual(elem, expected[idx], "Line \(idx) is not equal")
 			idx += 1
@@ -330,7 +329,9 @@ class CSVParser_Test_AppTests: XCTestCase {
 	
 	func testQuoteQuoteEscape() {
 		let fileURL = Bundle(for: type(of: self)).url(forResource: "Reading Test Documents/quote-quote-escape", withExtension: "csv")!
-		let csvDoc = CSVDocument(fileURL: fileURL)
+		var config = CSVConfig()
+		config.escapeCharacter = "\""
+		let csvDoc = CSVDocument(fileURL: fileURL, config: config)
 		let iterator = csvDoc.makeIterator()
 		
 		let expected = [
@@ -340,7 +341,6 @@ class CSVParser_Test_AppTests: XCTestCase {
 		
 		var idx = 0
 		while let elem = iterator.next() {
-			XCTAssertEqual(iterator.nextWarning()?.type, .unexpectedCharacterAfterQuote)
 			XCTAssertEqual(elem.count, expected[idx].count, "Line \(idx) does not have expected length")
 			XCTAssertEqual(elem, expected[idx], "Line \(idx) is not equal")
 			idx += 1
@@ -374,13 +374,56 @@ class CSVParser_Test_AppTests: XCTestCase {
 		XCTAssertNil(iterator.nextWarning())
 	}
 	
+	func testQuotesEscapes() {
+		do {
+			var config = CSVConfig()
+			config.escapeCharacter = "\""
+			let csvString = "1,\"2\"\"\",3"
+			let csvDoc = CSVDocument(string: csvString, config: config)
+			let iterator = csvDoc.makeIterator()
+			
+			XCTAssertEqual(iterator.next()!, ["1","2\"","3"])
+			XCTAssertNil(iterator.nextWarning())
+			XCTAssertNil(iterator.next())
+		}
+		do {
+			var config = CSVConfig()
+			config.escapeCharacter = "\\"
+			let csvString = "1,\"2\\\"\",3"
+			let csvDoc = CSVDocument(string: csvString, config: config)
+			let iterator = csvDoc.makeIterator()
+			
+			XCTAssertEqual(iterator.next()!, ["1","2\"","3"])
+			XCTAssertNil(iterator.nextWarning())
+			XCTAssertNil(iterator.next())
+		}
+		do {
+			var config = CSVConfig()
+			config.escapeCharacter = "\\"
+			let csvString = "1,\"2\"\"\",3"
+			let csvDoc = CSVDocument(string: csvString, config: config)
+			let iterator = csvDoc.makeIterator()
+			while let _ = iterator.next() {}
+			XCTAssertEqual(iterator.nextWarning()?.type, .unexpectedQuote)
+		}
+		do {
+			var config = CSVConfig()
+			config.escapeCharacter = "\""
+			let csvString = "1,\"2\\\"\",3"
+			let csvDoc = CSVDocument(string: csvString, config: config)
+			let iterator = csvDoc.makeIterator()
+			while let _ = iterator.next() {}
+			XCTAssertEqual(iterator.nextWarning()?.type, .unexpectedEOF)
+		}
+	}
+	
 	func testTooManyQuotesAtEnd() {
 		let fileURL = Bundle(for: type(of: self)).url(forResource: "Reading Test Documents/tooMany-quotes-atEnd", withExtension: "csv")!
 		let csvDoc = CSVDocument(fileURL: fileURL)
 		let iterator = csvDoc.makeIterator()
 		
 		while let _ = iterator.next() {
-			XCTAssertEqual(iterator.nextWarning()?.type, .unexpectedEOFWhileInsideQuote)
+			XCTAssertEqual(iterator.nextWarning()?.type, .unexpectedQuote)
 		}
 	}
 	
@@ -405,6 +448,7 @@ class CSVParser_Test_AppTests: XCTestCase {
 		XCTAssertNil(iterator.nextWarning())
 	}
 	
+	/*
 	func testPerformance() {
 		self.measure {
 			let fileURL = Bundle(for: type(of: self)).url(forResource: "Reading Test Documents/semi-big-file", withExtension: "csv")!
@@ -429,7 +473,7 @@ class CSVParser_Test_AppTests: XCTestCase {
 			XCTAssertNil(iterator.nextWarning())
 		}
 	}
-
+	
 	func testPerformanceString() {
 		let fileURL = Bundle(for: type(of: self)).url(forResource: "Reading Test Documents/semi-big-file", withExtension: "csv")!
 		self.measure {
@@ -442,7 +486,7 @@ class CSVParser_Test_AppTests: XCTestCase {
 			XCTAssertNil(iterator.nextWarning())
 		}
 	}
-
+	
 	func testPerformanceIterators() {
 		let fileURL = Bundle(for: type(of: self)).url(forResource: "Reading Test Documents/semi-big-file", withExtension: "csv")!
 		self.measure {
@@ -457,7 +501,6 @@ class CSVParser_Test_AppTests: XCTestCase {
 		}
 	}
 	
-	/*
 	func testPerformanceBigFile() {
 		self.measure {
 			let fileURL = Bundle(for: type(of: self)).url(forResource: "Reading Test Documents/really-big-file", withExtension: "csv")!
