@@ -130,6 +130,8 @@ class ImportController: NSObject {
 			let col = NSTableColumn(identifier: "\(i)")
 			if firstRowAsHeader && headerData.indices.contains(i) {
 				col.headerCell.title = headerData[i]
+			} else {
+				col.headerCell.title = "Column \(i+1)"
 			}
 			tableView?.addTableColumn(col)
 		}
