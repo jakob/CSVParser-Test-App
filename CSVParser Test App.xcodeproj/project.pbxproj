@@ -24,6 +24,7 @@
 		83E5869F1E2D35B20058879B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 83E5869E1E2D35B20058879B /* Assets.xcassets */; };
 		83E586A21E2D35B20058879B /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 83E586A01E2D35B20058879B /* Main.storyboard */; };
 		83E586AD1E2D35B20058879B /* CSVParser_Test_AppTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83E586AC1E2D35B20058879B /* CSVParser_Test_AppTests.swift */; };
+		CD199A8E1E5CAE0300E49B3D /* Latin1CodepointIterator.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD199A8D1E5CAE0300E49B3D /* Latin1CodepointIterator.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -58,6 +59,7 @@
 		83E586A81E2D35B20058879B /* CSVParser Test AppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "CSVParser Test AppTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		83E586AC1E2D35B20058879B /* CSVParser_Test_AppTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSVParser_Test_AppTests.swift; sourceTree = "<group>"; };
 		83E586AE1E2D35B20058879B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		CD199A8D1E5CAE0300E49B3D /* Latin1CodepointIterator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Latin1CodepointIterator.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -86,6 +88,7 @@
 				835954231E49D85000D1F0DF /* Parsers.swift */,
 				834FDA611E532D8100CC4A91 /* TokenIterators.swift */,
 				834FDA5E1E532D8100CC4A91 /* CodepointIterators.swift */,
+				CD199A8D1E5CAE0300E49B3D /* Latin1CodepointIterator.swift */,
 				834FDA5D1E532D8100CC4A91 /* ByteIterators.swift */,
 			);
 			path = CSVParser;
@@ -252,6 +255,7 @@
 				834FDA631E532D8100CC4A91 /* CodepointIterators.swift in Sources */,
 				834FDA651E532D8100CC4A91 /* DataTypes.swift in Sources */,
 				835954241E49D85000D1F0DF /* Parsers.swift in Sources */,
+				CD199A8E1E5CAE0300E49B3D /* Latin1CodepointIterator.swift in Sources */,
 				834FDA681E532E7C00CC4A91 /* MainViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
