@@ -495,11 +495,47 @@ class CSVParser_Test_AppTests: XCTestCase {
 
 	}
 	
-	/*
 	func testPerformance() {
 		self.measure {
 			let fileURL = Bundle(for: type(of: self)).url(forResource: "Reading Test Documents/semi-big-file", withExtension: "csv")!
 			let csvDoc = CSVDocument(fileURL: fileURL)
+			let iterator = csvDoc.makeIterator()
+			
+			while let _ = iterator.next() {}
+			
+			XCTAssertNil(iterator.nextWarning())
+		}
+	}
+	
+	// This test creates a temporary PostgreSQL table and loads a CSV file
+	// Requires Postgres.app to be installed, and a PostgreSQL server must be running
+	// This performance measurement is just for comparison; our code must be faster than this
+	func testPerformanceIssuesPsql() {
+		self.measure {
+			let fileURL = Bundle(for: type(of: self)).url(forResource: "Reading Test Documents/postico-issues", withExtension: "csv")!
+			
+			let psql = Process()
+			psql.launchPath = "/Applications/Postgres.app/Contents/Versions/latest/bin/psql"
+			psql.arguments = [
+				"-c",
+				"CREATE TEMP TABLE issues_temp ( number integer, created_at timestamp with time zone, username text, title text, body text, reaction_count integer, data jsonb );",
+				"-c",
+				"\\copy issues_temp from '\(fileURL.path)' with (format csv, header)"
+			]
+			psql.launch()
+			psql.waitUntilExit()
+			
+			XCTAssertEqual(psql.terminationStatus, 0)
+		}
+	}
+
+	// How long does it take us to parse a small CSV file?
+	func testPerformanceIssues() {
+		self.measure {
+			let fileURL = Bundle(for: type(of: self)).url(forResource: "Reading Test Documents/postico-issues", withExtension: "csv")!
+			var config = CSVConfig()
+			config.escapeCharacter = "\""
+			let csvDoc = CSVDocument(fileURL: fileURL, config: config)
 			let iterator = csvDoc.makeIterator()
 			
 			while let _ = iterator.next() {}
@@ -548,16 +584,4 @@ class CSVParser_Test_AppTests: XCTestCase {
 		}
 	}
 	
-	func testPerformanceBigFile() {
-		self.measure {
-			let fileURL = Bundle(for: type(of: self)).url(forResource: "Reading Test Documents/really-big-file", withExtension: "csv")!
-			let csvDoc = CSVDocument(fileURL: fileURL)
-			let iterator = csvDoc.makeIterator()
-			
-			while let _ = iterator.next() {}
-			
-			XCTAssertNil(iterator.nextWarning())
-		}
-	}
-	*/
 }
