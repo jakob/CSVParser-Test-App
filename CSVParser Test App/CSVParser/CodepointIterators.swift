@@ -8,7 +8,7 @@
 
 import Foundation
 
-let ItemReplacementChar = UnicodeScalar(0xFFFD)
+let ItemReplacementChar = UnicodeScalar(0xFFFD)!
 
 class UTF8CodepointIterator<InputIterator: IteratorProtocol>: Sequence, IteratorProtocol, WarningProducer, PositionRetriever where InputIterator.Element == UInt8 {
 	internal var warnings = [CSVWarning]()
