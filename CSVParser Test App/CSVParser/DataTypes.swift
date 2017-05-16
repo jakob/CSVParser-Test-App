@@ -55,6 +55,7 @@ struct CSVWarning {
 		case unexpectedQuote
 		case unexpectedEOF
 		case unrecognizedEscapedCharacter
+		case unexpectedEscape
 		case invalidByteForEncoding
 	}
 	let type: WarningType
@@ -79,6 +80,8 @@ struct CSVWarning {
 			return "unexpectedEOF"
 		case .unrecognizedEscapedCharacter:
 			return "unrecognizedEscapedCharacter"
+		case .unexpectedEscape:
+			return "unexpectedEscape"
 		case .invalidByteForEncoding:
 			return "invalidByteForEncoding"
 		}

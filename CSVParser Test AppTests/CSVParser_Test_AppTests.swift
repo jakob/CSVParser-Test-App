@@ -468,6 +468,33 @@ class CSVParser_Test_AppTests: XCTestCase {
 		XCTAssertNil(iterator.nextWarning())
 	}
 	
+	func testIssuesSample() {
+		let fileURL = Bundle(for: type(of: self)).url(forResource: "Reading Test Documents/postico-issues", withExtension: "csv")!
+		
+		do {
+			let csvDoc = CSVDocument(fileURL: fileURL)
+			let iterator = csvDoc.makeIterator()
+			while let elem = iterator.next() { _ = elem }
+			XCTAssertNotNil(iterator.nextWarning())
+		}
+
+		do {
+			var config = CSVConfig()
+			config.escapeCharacter = "\""
+			let csvDoc = CSVDocument(fileURL: fileURL, config: config)
+			let iterator = csvDoc.makeIterator()
+			
+			var idx = 0
+			while let elem = iterator.next() {
+				XCTAssertNil(iterator.nextWarning(), "Warning in line \(idx)")
+				XCTAssertEqual(elem.count, 7, "Line \(idx) does not have the correct length")
+				idx += 1
+			}
+			XCTAssertNil(iterator.nextWarning())
+		}
+
+	}
+	
 	/*
 	func testPerformance() {
 		self.measure {

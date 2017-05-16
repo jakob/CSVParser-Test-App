@@ -72,6 +72,10 @@ class CSVParser<InputIterator: IteratorProtocol>: Sequence, IteratorProtocol, Wa
 				appendWarning(type: .unrecognizedEscapedCharacter)
 				mode = .insideQuote
 				
+			case (_,.escape):
+				appendWarning(type: .unexpectedEscape)
+				currValue += token.content
+				
 			case (.afterQuote, .quote):
 				if config.quoteCharacter == config.escapeCharacter {
 					currValue += token.content
