@@ -79,23 +79,21 @@ class CSVParser_Test_AppTests: XCTestCase {
 	
 	func testLatin1() {
 		let testString = "aäu€"
-		let testData = testString.data(using: .windowsCP1252)!
+		var testData = testString.data(using: .windowsCP1252)!
+		testData.append(0x81)
 		
 		let byteIterator = DataByteIterator(data: testData)
         let codepointIterator = Latin1CodepointIterator(inputIterator: byteIterator)
 		
-		let expected = ["a","ä","u","€"]
+		let expected = ["a","ä","u","€","�"]
 		
 		var i = 0
 		while let char = codepointIterator.next(), expected.indices.contains(i) {
-			while let warning = codepointIterator.nextWarning() {
-				print("WARNING: \(warning.text)")
-			}
-			
 			XCTAssertEqual(String(char), expected[i], "Character \(i) is not equal")
 			i += 1
 		}
-		XCTAssertEqual(i,4)
+		XCTAssertEqual(i,expected.count)
+		XCTAssertEqual(codepointIterator.nextWarning()?.type, .invalidByteForEncoding)
 	}
 
 	
