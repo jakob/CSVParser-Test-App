@@ -8,14 +8,14 @@
 
 import Foundation
 
-class CSVParser<InputIterator: IteratorProtocol>: Sequence, IteratorProtocol, WarningProducer, PositionRetriever where InputIterator.Element == CSVToken {
+class CSVParser: Sequence, IteratorProtocol, WarningProducer, PositionRetriever {
 	internal var warnings = [CSVWarning]()
-	private var inputIterator: InputIterator
+	private var inputIterator: TokenIterator
 	private var config: CSVConfig
 	private var rowOffset: Int = 0
 	private var lineOffset: Int = 0
 	
-	init(inputIterator: InputIterator, config: CSVConfig) {
+	init(inputIterator: TokenIterator, config: CSVConfig) {
 		self.inputIterator = inputIterator
 		self.config = config
 	}
@@ -24,7 +24,6 @@ class CSVParser<InputIterator: IteratorProtocol>: Sequence, IteratorProtocol, Wa
 		var values = [CSVValue]()
 		var currValue = ""
 		var mode = CSVParsingMode.beforeQuote
-		
 		func appendValue() {
 			let quoted = (mode == .beforeQuote) ? false : true
 			let val = CSVValue(currValue, quoted: quoted)
@@ -36,15 +35,15 @@ class CSVParser<InputIterator: IteratorProtocol>: Sequence, IteratorProtocol, Wa
 			let warning = CSVWarning(type: type, position: actualPosition())
 			warnings.append(warning)
 		}
-		
-		if var warningProducer = inputIterator as? WarningProducer {
-			while let w = warningProducer.nextWarning() {
-				warnings.append(w)
-			}
+		while let w = inputIterator.nextWarning() {
+			warnings.append(w)
 		}
 		
 		guard var token = inputIterator.next(), token.type != .endOfFile else { return nil }
-		
+		func appendToValue() {
+			currValue.append(Character(token.content))
+		}
+
 		var lastEscapeToken: CSVToken?
 		while true {
 			
@@ -59,37 +58,37 @@ class CSVParser<InputIterator: IteratorProtocol>: Sequence, IteratorProtocol, Wa
 				
 			// quote or backslash in escaped mode
 			case (.escaped, .quote), (.escaped, .escape):
-				currValue += token.content
+				currValue.append(Character(token.content))
 				mode = .insideQuote
 				
 			// unrecognized escaped character
 			case (.escaped, _):
 				if let content = lastEscapeToken?.content {
-					currValue += content
+					currValue.append(Character(content))
 					lastEscapeToken = nil
 				}
-				currValue += token.content
+				appendToValue()
 				appendWarning(type: .unrecognizedEscapedCharacter)
 				mode = .insideQuote
 				
 			case (_,.escape):
 				appendWarning(type: .unexpectedEscape)
-				currValue += token.content
+				appendToValue()
 				
 			case (.afterQuote, .quote):
 				if config.quoteCharacter == config.escapeCharacter {
-					currValue += token.content
+					appendToValue()
 					mode = .insideQuote
 				} else {
 					appendWarning(type: .unexpectedQuote)
 				}
 				
 			case (.afterQuote, .character):
-				currValue += token.content
+				appendToValue()
 				appendWarning(type: .unexpectedCharacter)
 				
 			case (_, .character):
-				currValue += token.content
+				appendToValue()
 				
 			case (.insideQuote, .quote):
 				mode = .afterQuote
@@ -100,7 +99,7 @@ class CSVParser<InputIterator: IteratorProtocol>: Sequence, IteratorProtocol, Wa
 				return values
 				
 			case (.insideQuote, _):
-				currValue += token.content
+				appendToValue()
 				
 			case (_, .delimiter):
 				appendValue()
@@ -108,7 +107,7 @@ class CSVParser<InputIterator: IteratorProtocol>: Sequence, IteratorProtocol, Wa
 				
 			case (.beforeQuote, .quote):
 				if !currValue.isEmpty {
-					currValue += token.content
+					appendToValue()
 					appendWarning(type: .unexpectedQuote)
 				} else {
 					mode = .insideQuote
@@ -132,23 +131,18 @@ class CSVParser<InputIterator: IteratorProtocol>: Sequence, IteratorProtocol, Wa
 	}
 	
 	func actualPosition() -> Position {
-		var position: Position
-		if let positionRetriever = inputIterator as? PositionRetriever {
-			position = positionRetriever.actualPosition()
-		} else {
-			position = Position()
-		}
+		var position = inputIterator.actualPosition()
 		position.rowOffset = rowOffset
 		position.lineOffset = lineOffset
 		return position
 	}
 }
 
-class SimpleParser<InputIterator: IteratorProtocol>: Sequence, IteratorProtocol, WarningProducer, PositionRetriever where InputIterator.Element == [CSVValue] {
-	private var inputIterator: InputIterator
+class SimpleParser: Sequence, IteratorProtocol, WarningProducer, PositionRetriever {
+	private var inputIterator: CSVParser
 	private var lineOffset: Int = 0
 	
-	init(inputIterator: InputIterator) {
+	init(inputIterator: CSVParser) {
 		self.inputIterator = inputIterator
 	}
 	
@@ -159,19 +153,11 @@ class SimpleParser<InputIterator: IteratorProtocol>: Sequence, IteratorProtocol,
 	}
 	
 	func nextWarning() -> CSVWarning? {
-		if var warningProducer = inputIterator as? WarningProducer {
-			return warningProducer.nextWarning()
-		}
-		return nil
+		return inputIterator.nextWarning()
 	}
 	
 	func actualPosition() -> Position {
-		var position: Position
-		if let positionRetriever = inputIterator as? PositionRetriever {
-			position = positionRetriever.actualPosition()
-		} else {
-			position = Position()
-		}
+		var position = inputIterator.actualPosition()
 		position.lineOffset = lineOffset
 		return position
 	}

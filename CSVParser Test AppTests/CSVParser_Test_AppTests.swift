@@ -574,7 +574,7 @@ class CSVParser_Test_AppTests: XCTestCase {
 		let fileURL = Bundle(for: type(of: self)).url(forResource: "Reading Test Documents/semi-big-file", withExtension: "csv")!
 		self.measure {
 			let csvString = try! String(contentsOf: fileURL)
-			let iterator = csvString.unicodeScalars.makeIterator()
+			let iterator = StringCodepointIterator(string: csvString)
 			let config = CSVConfig()
 			let tokenizer = TokenIterator(inputIterator: iterator, config: config)
 			let parser = CSVParser(inputIterator: tokenizer, config: config)

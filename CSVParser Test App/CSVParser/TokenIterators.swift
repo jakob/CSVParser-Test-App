@@ -8,19 +8,19 @@
 
 import Foundation
 
-class TokenIterator<InputIterator: IteratorProtocol>: Sequence, IteratorProtocol, WarningProducer, PositionRetriever where InputIterator.Element == UnicodeScalar {
-	private var inputIterator: InputIterator
+class TokenIterator: WarningProducer, PositionRetriever {
+	private var inputIterator: CodepointIterator
 	private var config: CSVConfig
 	private var tokenOffset: Int = 0
 	
-	init(inputIterator: InputIterator, config: CSVConfig) {
+	init(inputIterator: CodepointIterator, config: CSVConfig) {
 		self.inputIterator = inputIterator
 		self.config = config
 	}
 	
 	func next() -> CSVToken? {
 		guard let char = inputIterator.next() else {
-			return CSVToken(type: .endOfFile, content: "")
+			return CSVToken(type: .endOfFile, content: UnicodeScalar(0))
 		}
 		
 		let type: CSVToken.TokenType
@@ -40,24 +40,16 @@ class TokenIterator<InputIterator: IteratorProtocol>: Sequence, IteratorProtocol
 		
 		tokenOffset += 1
 		
-		let token = CSVToken(type: type, content: String(char))
+		let token = CSVToken(type: type, content: char)
 		return token
 	}
 	
 	func nextWarning() -> CSVWarning? {
-		if var warningProducer = inputIterator as? WarningProducer {
-			return warningProducer.nextWarning()
-		}
-		return nil
+		return inputIterator.nextWarning()
 	}
 	
 	func actualPosition() -> Position {
-		var position: Position
-		if let positionRetriever = inputIterator as? PositionRetriever {
-			position = positionRetriever.actualPosition()
-		} else {
-			position = Position()
-		}
+		var position = inputIterator.actualPosition()
 		position.tokenOffset = tokenOffset
 		return position
 	}

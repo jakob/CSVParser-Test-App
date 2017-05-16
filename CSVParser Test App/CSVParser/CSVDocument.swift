@@ -35,27 +35,27 @@ class CSVDocument: Sequence {
 		self.config = config
 	}
 	
-	func makeIterator() -> AbstractIterator<[String]> {
-		return ConcreteIterator(SimpleParser(inputIterator: makeCSVValueIterator()))
+	func makeIterator() -> SimpleParser {
+		return SimpleParser(inputIterator: makeCSVValueIterator())
 	}
 	
-	func makeCSVValueIterator() -> AbstractIterator<[CSVValue]> {
-		let codepointIterator: AbstractIterator<UnicodeScalar>
+	func makeCSVValueIterator() -> CSVParser {
+		let codepointIterator: CodepointIterator
 		
 		if let str = sourceString {
-			codepointIterator = ConcreteIterator(str.unicodeScalars.makeIterator())
+			codepointIterator = StringCodepointIterator(string: str)
 		} else {
-			let byteIterator: AbstractIterator<UInt8>
+			let byteIterator: ByteIterator
 			if let url = fileURL {
-				byteIterator = ConcreteIterator(FileByteIterator(fileURL: url))
+				byteIterator = FileByteIterator(fileURL: url)
 			} else if let data = sourceData {
-				byteIterator = ConcreteIterator(DataByteIterator(data: data))
+				byteIterator = DataByteIterator(data: data)
 			} else {
 				fatalError("This should be unreachable")
 			}
 			
 			if config.encoding == .utf8 {
-				codepointIterator = ConcreteIterator(UTF8CodepointIterator(inputIterator: byteIterator))
+				codepointIterator = UTF8CodepointIterator(inputIterator: byteIterator)
 			} else {
 				fatalError("Unsupported Character Encoding")
 			}
@@ -63,7 +63,7 @@ class CSVDocument: Sequence {
 		
 		let tokenIterator = TokenIterator(inputIterator: codepointIterator, config: config)
 		let parser = CSVParser(inputIterator: tokenIterator, config: config)
-		return ConcreteIterator(parser)
+		return parser
 	}
 	
 }

@@ -27,7 +27,7 @@ struct CSVToken: Equatable {
 		case endOfFile
 	}
 	var type: TokenType
-	var content: String
+	var content: UnicodeScalar
 	
 	static func ==(lhs: CSVToken, rhs: CSVToken) -> Bool {
 		return lhs.type == rhs.type && lhs.content == rhs.content
@@ -112,54 +112,10 @@ struct Position: CustomStringConvertible {
 	}
 }
 
-
-
 protocol WarningProducer {
 	mutating func nextWarning() -> CSVWarning?
 }
 
 protocol PositionRetriever {
 	func actualPosition() -> Position
-}
-
-class AbstractIterator<Element>: IteratorProtocol, WarningProducer, PositionRetriever {
-	internal var warnings = [CSVWarning]()
-	
-	func next() -> Element? {
-		fatalError("This method is abstract")
-	}
-	
-	func nextWarning() -> CSVWarning? {
-		fatalError("This method is abstract")
-	}
-	
-	func actualPosition() -> Position {
-		fatalError("This method is abstract")
-	}
-}
-
-class ConcreteIterator<I: IteratorProtocol>: AbstractIterator<I.Element> {
-	var iterator: I
-	
-	init(_ iterator: I) {
-		self.iterator = iterator
-	}
-	
-	override func next() -> I.Element? {
-		return iterator.next()
-	}
-	
-	override func nextWarning() -> CSVWarning? {
-		if var warningProducer = iterator as? WarningProducer {
-			return warningProducer.nextWarning()
-		}
-		return nil
-	}
-	
-	override func actualPosition() -> Position {
-		if let positionRetriever = iterator as? PositionRetriever {
-			return positionRetriever.actualPosition()
-		}
-		return Position()
-	}
 }

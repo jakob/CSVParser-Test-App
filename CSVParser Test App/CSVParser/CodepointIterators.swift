@@ -10,14 +10,49 @@ import Foundation
 
 let ItemReplacementChar = UnicodeScalar(0xFFFD)!
 
-class UTF8CodepointIterator<InputIterator: IteratorProtocol>: Sequence, IteratorProtocol, WarningProducer, PositionRetriever where InputIterator.Element == UInt8 {
+class CodepointIterator: WarningProducer, PositionRetriever {
+	func nextWarning() -> CSVWarning? {
+		fatalError("Not Implemented")
+	}
+	func actualPosition() -> Position {
+		fatalError("Not Implemented")
+	}
+	func next() -> UnicodeScalar? {
+		fatalError("Not Implemented")
+	}
+}
+
+class StringCodepointIterator: CodepointIterator {
+	var scalars: String.UnicodeScalarView.Iterator
+	var position: Position
+	init(string: String) {
+		self.scalars = string.unicodeScalars.makeIterator()
+		self.position = Position()
+		self.position.totalScalars = string.unicodeScalars.count
+		self.position.scalarOffset = 0
+	}
+	override func next() -> UnicodeScalar? {
+		position.scalarOffset! += 1
+		return scalars.next()
+	}
+	override func nextWarning() -> CSVWarning? {
+		return nil
+	}
+	
+	override func actualPosition() -> Position {
+		return position
+	}
+
+}
+
+class UTF8CodepointIterator: CodepointIterator {
 	internal var warnings = [CSVWarning]()
-	private var inputIterator: InputIterator
+	private var inputIterator: ByteIterator
 	private var returnedByte: UInt8?
 	private var totalScalars: Int?
 	private var scalarOffset: Int = 0
 	
-	init(inputIterator: InputIterator) {
+	init(inputIterator: ByteIterator) {
 		self.inputIterator = inputIterator
 	}
 	
@@ -27,11 +62,7 @@ class UTF8CodepointIterator<InputIterator: IteratorProtocol>: Sequence, Iterator
 			return b
 		}
 		let nextByte = inputIterator.next()
-		if var warningProducer = inputIterator as? WarningProducer {
-			while let w = warningProducer.nextWarning() {
-				warnings.append(w)
-			}
-		}
+		while let w = inputIterator.nextWarning() { warnings.append(w) }
 		return nextByte
 	}
 	
@@ -43,7 +74,7 @@ class UTF8CodepointIterator<InputIterator: IteratorProtocol>: Sequence, Iterator
 	}
 	
 	
-	func next() -> UnicodeScalar? {
+	override func next() -> UnicodeScalar? {
 		func appendWarning(type: CSVWarning.WarningType) {
 			let warning = CSVWarning(type: type, position: actualPosition())
 			warnings.append(warning)
@@ -154,17 +185,12 @@ class UTF8CodepointIterator<InputIterator: IteratorProtocol>: Sequence, Iterator
 		}
 	}
 	
-	func nextWarning() -> CSVWarning? {
+	override func nextWarning() -> CSVWarning? {
 		return warnings.isEmpty ? nil : warnings.removeFirst()
 	}
 	
-	func actualPosition() -> Position {
-		var position: Position
-		if let positionRetriever = inputIterator as? PositionRetriever {
-			position = positionRetriever.actualPosition()
-		} else {
-			position = Position()
-		}
+	override func actualPosition() -> Position {
+		var position = inputIterator.actualPosition()
 		position.totalScalars = totalScalars
 		position.scalarOffset = scalarOffset
 		return position

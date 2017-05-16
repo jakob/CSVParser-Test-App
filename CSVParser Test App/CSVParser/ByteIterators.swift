@@ -8,7 +8,13 @@
 
 import Foundation
 
-class FileByteIterator: Sequence, IteratorProtocol, WarningProducer, PositionRetriever {
+class ByteIterator: WarningProducer, PositionRetriever {
+	func next() -> UInt8? { fatalError("Not Implemented") }
+	func nextWarning() -> CSVWarning? { fatalError("Not Implemented") }
+	func actualPosition() -> Position { fatalError("Not Implemented") }
+}
+
+class FileByteIterator: ByteIterator {
 	internal var warnings = [CSVWarning]()
 	private let fileURL: URL
 	private var fileHandle: FileHandle?
@@ -20,7 +26,7 @@ class FileByteIterator: Sequence, IteratorProtocol, WarningProducer, PositionRet
 	
 	init(fileURL: URL) {
 		self.fileURL = fileURL
-		
+		super.init()
 		do {
 			let attributes = try FileManager.default.attributesOfItem(atPath: fileURL.path)
 			if let fileSize = attributes[FileAttributeKey.size] as? Int {
@@ -36,7 +42,7 @@ class FileByteIterator: Sequence, IteratorProtocol, WarningProducer, PositionRet
 		fileHandle = nil
 	}
 	
-	func next() -> UInt8? {
+	override func next() -> UInt8? {
 		if fileHandle == nil {
 			fileHandle = FileHandle(forReadingAtPath: fileURL.path)
 			if fileHandle == nil {
@@ -57,11 +63,11 @@ class FileByteIterator: Sequence, IteratorProtocol, WarningProducer, PositionRet
 		return result
 	}
 	
-	func nextWarning() -> CSVWarning? {
+	override func nextWarning() -> CSVWarning? {
 		return warnings.isEmpty ? nil : warnings.removeFirst()
 	}
 	
-	func actualPosition() -> Position {
+	override func actualPosition() -> Position {
 		var position = Position()
 		position.totalBytes = totalBytes
 		position.byteOffset = byteOffset
@@ -69,7 +75,7 @@ class FileByteIterator: Sequence, IteratorProtocol, WarningProducer, PositionRet
 	}
 }
 
-class DataByteIterator: Sequence, IteratorProtocol, PositionRetriever {
+class DataByteIterator: ByteIterator {
 	private let data: Data
 	private var totalBytes: Int
 	private var byteOffset: Int = 0
@@ -79,7 +85,7 @@ class DataByteIterator: Sequence, IteratorProtocol, PositionRetriever {
 		self.totalBytes = data.count
 	}
 	
-	func next() -> UInt8? {
+	override func next() -> UInt8? {
 		if byteOffset < totalBytes {
 			let byte = data[byteOffset]
 			byteOffset += 1
@@ -88,11 +94,15 @@ class DataByteIterator: Sequence, IteratorProtocol, PositionRetriever {
 		return nil
 	}
 	
-	func actualPosition() -> Position {
+	override func actualPosition() -> Position {
 		var position = Position()
 		position.totalBytes = totalBytes
 		position.byteOffset = byteOffset
 		return position
+	}
+	
+	override func nextWarning() -> CSVWarning? {
+		return nil
 	}
 }
 

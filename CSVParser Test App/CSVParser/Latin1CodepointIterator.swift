@@ -8,16 +8,16 @@
 
 import Foundation
 
-class Latin1CodepointIterator<InputIterator: IteratorProtocol>: Sequence, IteratorProtocol, WarningProducer, PositionRetriever where InputIterator.Element == UInt8 {
+class Latin1CodepointIterator: CodepointIterator {
 
 	private var scalarOffset: Int = 0
 
     internal var warnings = [CSVWarning]()
     
-    private var inputIterator: InputIterator
+    private var inputIterator: ByteIterator
     private var returnedByte: UInt8?
     
-    init(inputIterator: InputIterator) {
+    init(inputIterator: ByteIterator) {
         self.inputIterator = inputIterator
     }
     
@@ -27,11 +27,9 @@ class Latin1CodepointIterator<InputIterator: IteratorProtocol>: Sequence, Iterat
             return b
         }
         let nextByte = inputIterator.next()
-        if var warningProducer = inputIterator as? WarningProducer {
-            while let w = warningProducer.nextWarning() {
-                warnings.append(w)
-            }
-        }
+		while let w = inputIterator.nextWarning() {
+			warnings.append(w)
+		}
         return nextByte
     }
     
@@ -42,7 +40,7 @@ class Latin1CodepointIterator<InputIterator: IteratorProtocol>: Sequence, Iterat
         returnedByte = byte
     }
     
-    func next() -> UnicodeScalar? {
+    override func next() -> UnicodeScalar? {
 		let position = actualPosition()
         guard let byte = nextByte() else {
             return nil
@@ -64,17 +62,12 @@ class Latin1CodepointIterator<InputIterator: IteratorProtocol>: Sequence, Iterat
 		}
     }
     
-    func nextWarning() -> CSVWarning? {
+    override func nextWarning() -> CSVWarning? {
         return warnings.isEmpty ? nil : warnings.removeFirst()
     }
 	
-	func actualPosition() -> Position {
-		var position: Position
-		if let positionRetriever = inputIterator as? PositionRetriever {
-			position = positionRetriever.actualPosition()
-		} else {
-			position = Position()
-		}
+	override func actualPosition() -> Position {
+		var position = inputIterator.actualPosition()
 		position.totalScalars = position.totalBytes
 		position.scalarOffset = scalarOffset
 		return position
