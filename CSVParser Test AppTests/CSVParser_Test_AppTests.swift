@@ -538,8 +538,12 @@ class CSVParser_Test_AppTests: XCTestCase {
 			let csvDoc = CSVDocument(fileURL: fileURL, config: config)
 			let iterator = csvDoc.makeIterator()
 			
-			while let _ = iterator.next() {}
-			
+			var i = 0
+			while let line = iterator.next() {
+				XCTAssertEqual(line.count, 7, "Length of line \(i)")
+				i += 1
+			}
+			XCTAssertEqual(i, 167, "Number of lines")
 			XCTAssertNil(iterator.nextWarning())
 		}
 	}
