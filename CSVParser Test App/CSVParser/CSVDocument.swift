@@ -8,7 +8,7 @@
 
 import Foundation
 
-class CSVDocument: Sequence {
+class CSVDocument {
 	private let fileURL: URL?
 	private let sourceData: Data?
 	private let sourceString: String?
@@ -47,6 +47,10 @@ class CSVDocument: Sequence {
 		} else {
 			let byteIterator: ByteIterator
 			if let url = fileURL {
+				if config.encoding == .utf8 {
+					let data = try! Data(contentsOf: url)
+					return FastCSVParserWrapper(data: data, config: config)
+				}
 				byteIterator = FileByteIterator(fileURL: url)
 			} else if let data = sourceData {
 				byteIterator = DataByteIterator(data: data)
@@ -62,7 +66,7 @@ class CSVDocument: Sequence {
 		}
 		
 		let tokenIterator = TokenIterator(inputIterator: codepointIterator, config: config)
-		let parser = CSVParser(inputIterator: tokenIterator, config: config)
+		let parser = SlowCSVParser(inputIterator: tokenIterator, config: config)
 		return parser
 	}
 	

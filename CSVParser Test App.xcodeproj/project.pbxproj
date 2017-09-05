@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3639D1BD1ECC59F000C56F64 /* FastCSVParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 3639D1BC1ECC59F000C56F64 /* FastCSVParser.m */; };
 		8312E24E1E3F5AEB00435F89 /* Heuristic Test Documents in Resources */ = {isa = PBXBuildFile; fileRef = 8312E24C1E3F5AEB00435F89 /* Heuristic Test Documents */; };
 		8312E24F1E3F5AEB00435F89 /* Reading Test Documents in Resources */ = {isa = PBXBuildFile; fileRef = 8312E24D1E3F5AEB00435F89 /* Reading Test Documents */; };
 		834FDA621E532D8100CC4A91 /* ByteIterators.swift in Sources */ = {isa = PBXBuildFile; fileRef = 834FDA5D1E532D8100CC4A91 /* ByteIterators.swift */; };
@@ -38,6 +39,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		3639D1BA1ECC59F000C56F64 /* CSVParser Test App-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "CSVParser Test App-Bridging-Header.h"; sourceTree = "<group>"; };
+		3639D1BB1ECC59F000C56F64 /* FastCSVParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FastCSVParser.h; sourceTree = "<group>"; };
+		3639D1BC1ECC59F000C56F64 /* FastCSVParser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FastCSVParser.m; sourceTree = "<group>"; };
 		8312E24C1E3F5AEB00435F89 /* Heuristic Test Documents */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "Heuristic Test Documents"; sourceTree = "<group>"; };
 		8312E24D1E3F5AEB00435F89 /* Reading Test Documents */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "Reading Test Documents"; sourceTree = "<group>"; };
 		834FDA5D1E532D8100CC4A91 /* ByteIterators.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ByteIterators.swift; sourceTree = "<group>"; };
@@ -90,6 +94,9 @@
 				834FDA5E1E532D8100CC4A91 /* CodepointIterators.swift */,
 				CD199A8D1E5CAE0300E49B3D /* Latin1CodepointIterator.swift */,
 				834FDA5D1E532D8100CC4A91 /* ByteIterators.swift */,
+				3639D1BB1ECC59F000C56F64 /* FastCSVParser.h */,
+				3639D1BC1ECC59F000C56F64 /* FastCSVParser.m */,
+				3639D1BA1ECC59F000C56F64 /* CSVParser Test App-Bridging-Header.h */,
 			);
 			path = CSVParser;
 			sourceTree = "<group>";
@@ -190,6 +197,7 @@
 				TargetAttributes = {
 					83E586961E2D35B20058879B = {
 						CreatedOnToolsVersion = 8.2.1;
+						LastSwiftMigration = 0830;
 						ProvisioningStyle = Automatic;
 					};
 					83E586A71E2D35B20058879B = {
@@ -247,6 +255,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				83B295671E5C81A40001B0C6 /* ProgressWindowController.swift in Sources */,
+				3639D1BD1ECC59F000C56F64 /* FastCSVParser.m in Sources */,
 				834FDA661E532D8100CC4A91 /* TokenIterators.swift in Sources */,
 				834FDA621E532D8100CC4A91 /* ByteIterators.swift in Sources */,
 				834FDA6A1E53307700CC4A91 /* ImportController.swift in Sources */,
@@ -384,11 +393,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = "CSVParser Test App/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "at.eggerapps.CSVParser-Test-App";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "CSVParser Test App/CSVParser/CSVParser Test App-Bridging-Header.h";
 				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
@@ -397,11 +408,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = "CSVParser Test App/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "at.eggerapps.CSVParser-Test-App";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "CSVParser Test App/CSVParser/CSVParser Test App-Bridging-Header.h";
 				SWIFT_VERSION = 3.0;
 			};
 			name = Release;

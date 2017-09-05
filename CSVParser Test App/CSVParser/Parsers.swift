@@ -8,7 +8,50 @@
 
 import Foundation
 
+class FastCSVParserWrapper: CSVParser {
+	
+	let parser: FastCSVParser
+	
+	init(data: Data, config: CSVConfig = CSVConfig()) {
+		parser = FastCSVParser(data: data)
+		parser.escape = Int8(config.escapeCharacter.value)
+		parser.quote = Int8(config.quoteCharacter.value)
+		parser.separator = Int8(config.delimiterCharacter.value)
+	}
+	
+	override func next() -> [CSVValue]? {
+		if let values = parser.next() {
+			return values.map { return CSVValue($0) }
+		} else {
+			return nil
+		}
+	}
+	
+	override func nextWarning() -> CSVWarning? {
+		return nil
+	}
+	
+	override func actualPosition() -> Position {
+		return Position()
+	}
+
+}
+
 class CSVParser: Sequence, IteratorProtocol, WarningProducer, PositionRetriever {
+	func next() -> [CSVValue]? {
+		fatalError("Not implemented")
+	}
+	
+	func nextWarning() -> CSVWarning? {
+		fatalError("Not implemented")
+	}
+	
+	func actualPosition() -> Position {
+		fatalError("Not implemented")
+	}
+}
+
+class SlowCSVParser: CSVParser {
 	internal var warnings = [CSVWarning]()
 	private var inputIterator: TokenIterator
 	private var config: CSVConfig
@@ -20,7 +63,7 @@ class CSVParser: Sequence, IteratorProtocol, WarningProducer, PositionRetriever 
 		self.config = config
 	}
 	
-	func next() -> [CSVValue]? {
+	override func next() -> [CSVValue]? {
 		var values = [CSVValue]()
 		var currValue = ""
 		var mode = CSVParsingMode.beforeQuote
@@ -126,11 +169,11 @@ class CSVParser: Sequence, IteratorProtocol, WarningProducer, PositionRetriever 
 		}
 	}
 	
-	func nextWarning() -> CSVWarning? {
+	override func nextWarning() -> CSVWarning? {
 		return warnings.isEmpty ? nil : warnings.removeFirst()
 	}
 	
-	func actualPosition() -> Position {
+	override func actualPosition() -> Position {
 		var position = inputIterator.actualPosition()
 		position.rowOffset = rowOffset
 		position.lineOffset = lineOffset

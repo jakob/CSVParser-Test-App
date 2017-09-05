@@ -581,7 +581,7 @@ class CSVParser_Test_AppTests: XCTestCase {
 			let iterator = StringCodepointIterator(string: csvString)
 			let config = CSVConfig()
 			let tokenizer = TokenIterator(inputIterator: iterator, config: config)
-			let parser = CSVParser(inputIterator: tokenizer, config: config)
+			let parser = SlowCSVParser(inputIterator: tokenizer, config: config)
 			let simpleParser = SimpleParser(inputIterator: parser)
 			while let _ = simpleParser.next() {}
 			XCTAssertNil(simpleParser.nextWarning())
